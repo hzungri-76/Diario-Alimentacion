@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diario de Alimentación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2F4739">
+
+<!-- iOS: hace que se pueda "Agregar a pantalla de inicio" como app a pantalla completa -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Diario">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<style>
+  :root{
+    --forest: #2F4739;
+    --forest-dark: #1E2F26;
+    --gold: #B8912B;
+    --paper: #F7F5EE;
+    --paper-line: #E4DFCF;
+    --ink: #26241E;
+    --ink-soft: #6B675A;
+    --rule-red: #B85C4A;
+    --white: #FFFDF9;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    padding: 32px 24px 80px;
+  }
+
+  .wrap{ max-width: 1400px; margin: 0 auto; }
+
+  header{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+    border-bottom: 3px solid var(--forest);
+    padding-bottom: 18px;
+    margin-bottom: 8px;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size: 2.3rem;
+    margin:0;
+    color: var(--forest-dark);
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle{
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    font-style: italic;
+    font-family:'Fraunces', serif;
+  }
+
+  .toolbar{
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items:center;
+    background: var(--white);
+    border: 1px solid var(--paper-line);
+    padding: 14px 18px;
+    border-radius: 4px;
+  }
+
+  .toolbar label{
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    display:block;
+    margin-bottom: 3px;
+  }
+
+  .toolbar input[type=date]{
+    font-family:'Inter',sans-serif;
+    font-size: 0.85rem;
+    padding: 6px 8px;
+    border: 1px solid var(--paper-line);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .field-group{ display:flex; flex-direction:column; }
+
+  button{
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size: 0.82rem;
+    border: none;
+    border-radius: 3px;
+    padding: 9px 16px;
+    cursor:pointer;
+    transition: transform 0.08s ease, opacity 0.15s ease;
+  }
+  button:active{ transform: scale(0.97); }
+
+  .btn-primary{ background: var(--forest); color: var(--white); }
+  .btn-primary:hover{ background: var(--forest-dark); }
+
+  .btn-ghost{ background: transparent; color: var(--forest); border: 1px solid var(--forest); }
+  .btn-ghost:hover{ background: rgba(47,71,57,0.07); }
+
+  .status{
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    margin-left: auto;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .status .dot{
+    width:7px; height:7px; border-radius:50%;
+    background: var(--gold);
+    transition: background 0.3s;
+  }
+  .status.saved .dot{ background: #4C7A5A; }
+
+  .table-shell{
+    margin-top: 22px;
+    background: var(--white);
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ledger red rule down the date column, notebook signature */
+  .table-shell::before{
+    content:"";
+    position:absolute;
+    left: 128px;
+    top:0; bottom:0;
+    width: 1px;
+    background: var(--rule-red);
+    opacity: 0.35;
+    z-index: 1;
+    pointer-events:none;
+  }
+
+  .scroll-area{
+    overflow-x:auto;
+    max-height: 72vh;
+    overflow-y:auto;
+  }
+
+  table{
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 1180px;
+    font-size: 0.86rem;
+  }
+
+  thead th{
+    position: sticky;
+    top:0;
+    background: var(--forest);
+    color: var(--white);
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    text-align:left;
+    padding: 12px 10px;
+    z-index: 2;
+    border-right: 1px solid rgba(255,255,255,0.12);
+  }
+  thead th:first-child{ z-index:3; }
+
+  tbody td{
+    border-bottom: 1px solid var(--paper-line);
+    border-right: 1px solid var(--paper-line);
+    padding: 0;
+    vertical-align: top;
+  }
+
+  tbody tr:nth-child(even){ background: #FBFAF5; }
+  tbody tr.today{ background: #F1EBD6; }
+  tbody tr.today td:first-child{ font-weight:700; }
+
+  .date-cell{
+    padding: 10px 10px;
+    font-weight:600;
+    color: var(--forest-dark);
+    white-space: nowrap;
+    background: inherit;
+    position: sticky;
+    left:0;
+    background-color: inherit;
+  }
+  .date-cell .day-name{
+    display:block;
+    font-size:0.68rem;
+    font-weight:500;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+
+  .peso-cell input{
+    width: 72px;
+    border: none;
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.86rem;
+    font-weight:600;
+    color: var(--forest-dark);
+    padding: 10px 8px;
+    text-align:center;
+  }
+  .peso-cell input:focus{ outline: 2px solid var(--gold); outline-offset: -2px; background: var(--white); }
+
+  .meal-cell textarea{
+    width: 100%;
+    min-width: 150px;
+    border: none;
+    background: transparent;
+    resize: vertical;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.83rem;
+    color: var(--ink);
+    padding: 10px 10px;
+    min-height: 44px;
+    line-height: 1.35;
+  }
+  .meal-cell textarea:focus{ outline: 2px solid var(--gold); outline-offset: -2px; background: var(--white); }
+  .meal-cell textarea::placeholder{ color: #BEBAA9; font-style: normal; text-align: center; }
+
+  .row-actions{ text-align:center; padding: 8px; }
+  .row-actions button{
+    background:transparent; border:none; color:#C0463A; font-size:1rem;
+    cursor:pointer; padding: 2px 6px; opacity: 0.55;
+  }
+  .row-actions button:hover{ opacity:1; }
+
+  footer{
+    margin-top: 14px;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap: 10px;
+  }
+
+  .legend{
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+  }
+
+  /* Tabs */
+  .tabs{
+    display:flex;
+    gap: 6px;
+    margin-top: 16px;
+  }
+  .tab-btn{
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--paper-line);
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    padding: 10px 18px;
+    font-size: 0.85rem;
+  }
+  .tab-btn.active{
+    background: var(--white);
+    color: var(--forest-dark);
+    border-color: var(--paper-line);
+    font-weight: 700;
+    position: relative;
+  }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  /* Stat banner */
+  .stat-banner{
+    display:flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 18px 0;
+  }
+  .stat-box{
+    background: var(--white);
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    padding: 14px 20px;
+    min-width: 160px;
+    flex: 1;
+  }
+  .stat-box.highlight{
+    background: var(--forest);
+    border-color: var(--forest-dark);
+  }
+  .stat-label{
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+  }
+  .stat-box.highlight .stat-label{ color: rgba(255,253,249,0.75); }
+  .stat-value{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size: 1.7rem;
+    color: var(--forest-dark);
+    margin-top: 4px;
+  }
+  .stat-box.highlight .stat-value{ color: var(--white); }
+  .stat-value.negative{ color: #C0463A; }
+  .stat-box.highlight .stat-value.negative{ color: #F3B5AA; }
+
+  /* Charts */
+  .chart-card{
+    background: var(--white);
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .chart-card h3{
+    font-family:'Fraunces', serif;
+    font-size: 1.05rem;
+    margin: 0 0 14px;
+    color: var(--forest-dark);
+  }
+  .chart-canvas-wrap{ height: 320px; position: relative; }
+  .chart-canvas-wrap.small{ height: 280px; }
+  .chart-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .chart-row.three{
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  @media (max-width: 980px){
+    .chart-row.three{ grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 760px){
+    .chart-row{ grid-template-columns: 1fr; }
+    .chart-row.three{ grid-template-columns: 1fr; }
+  }
+  .chart-empty{
+    display:none;
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 30px 10px;
+  }
+  .chart-empty.visible{ display:block; }
+
+  /* Sync modal */
+  .modal-overlay{
+    display:none;
+    position: fixed;
+    inset: 0;
+    background: rgba(38,36,30,0.55);
+    z-index: 100;
+    align-items:center;
+    justify-content:center;
+    padding: 20px;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background: var(--white);
+    border-radius: 6px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 24px 26px;
+  }
+  .modal-header{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    margin-bottom: 6px;
+  }
+  .modal-header h2{
+    font-family:'Fraunces', serif;
+    font-size: 1.25rem;
+    margin:0;
+    color: var(--forest-dark);
+  }
+  .modal-close{
+    background:transparent; border:none; font-size:1.1rem; color: var(--ink-soft); cursor:pointer; padding:4px 8px;
+  }
+  .modal-text{ font-size: 0.85rem; color: var(--ink-soft); line-height:1.5; margin: 6px 0 16px; }
+  .modal-hint{ font-size: 0.76rem; color: var(--ink-soft); font-style: italic; margin-top: 14px; line-height:1.4; }
+  .field-group.full{ width:100%; margin-bottom: 14px; }
+  .field-group.full label{
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing:0.05em; color: var(--ink-soft);
+    display:block; margin-bottom: 5px;
+  }
+  .field-group.full textarea, .field-group.full input[type=text]{
+    width:100%;
+    font-family: 'JetBrains Mono', monospace, 'Inter', sans-serif;
+    font-size: 0.78rem;
+    padding: 10px;
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    background: var(--paper);
+    color: var(--ink);
+    resize: vertical;
+  }
+  .field-group.full input[type=text]{ font-family:'Inter',sans-serif; font-size:0.85rem; }
+  .modal-actions{ display:flex; gap:10px; margin-top: 6px; }
+  .sync-status-box{
+    display:flex; align-items:center; gap:8px;
+    background: var(--paper);
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+  }
+  .sync-status-box .dot{
+    width:8px; height:8px; border-radius:50%; background: var(--gold); flex-shrink:0;
+  }
+  .sync-status-box.connected .dot{ background: #4C7A5A; }
+  .sync-status-box.connected{ color: var(--forest-dark); }
+  .sync-status-box.error .dot{ background: #C0463A; }
+
+  /* Print styles */
+  @media print{
+    body{ padding: 0; background: white; }
+    .toolbar, .row-actions, footer, .no-print{ display:none !important; }
+    .tabs{ display:none !important; }
+    #tab-graficos{ display:none !important; }
+    #tab-diario{ display:block !important; }
+    header{ border-bottom: 2px solid #000; margin-bottom: 10px; }
+    h1{ font-size: 1.5rem; color:#000; }
+    .subtitle{ color:#333; }
+    .table-shell{ border:none; box-shadow:none; }
+    .table-shell::before{ display:none; }
+    .scroll-area{ max-height:none; overflow: visible; }
+    table{ min-width: 0; width:100%; font-size: 9pt; table-layout: fixed; }
+    th:nth-child(1), td:nth-child(1){ width: 8%; }
+    th:nth-child(2), td:nth-child(2){ width: 6%; }
+    th:nth-child(3), td:nth-child(3),
+    th:nth-child(4), td:nth-child(4),
+    th:nth-child(5), td:nth-child(5),
+    th:nth-child(6), td:nth-child(6),
+    th:nth-child(7), td:nth-child(7),
+    th:nth-child(8), td:nth-child(8){ width: 14.33%; }
+    th, td{ word-wrap: break-word; overflow-wrap: break-word; }
+    thead th{ background:#eee !important; color:#000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; position: static; padding: 6px 6px; }
+    tbody tr:nth-child(even){ background: #f7f7f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tbody tr.today{ background: #f0ead0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .date-cell{ position: static; padding: 6px; }
+    .peso-cell input{ padding: 6px; }
+    .meal-cell textarea{ padding: 6px; min-height: 32px; }
+    .meal-cell textarea, .peso-cell input{ color:#000; }
+    tr.hide-for-print{ display:none !important; }
+    @page{ size: A4 landscape; margin: 10mm; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Diario de Alimentación</h1>
+      <div class="subtitle">Registro diario de peso y comidas — desde el 23 de julio</div>
+    </div>
+    <div class="status" id="statusIndicator"><span class="dot"></span><span id="statusText">Guardado</span></div>
+  </header>
+
+  <nav class="tabs no-print">
+    <button class="tab-btn active" data-tab="diario" type="button">📓 Diario</button>
+    <button class="tab-btn" data-tab="graficos" type="button">📊 Evolución</button>
+  </nav>
+
+  <section id="tab-diario" class="tab-panel active">
+
+  <div class="toolbar no-print">
+    <div class="field-group">
+      <label for="printFrom">Imprimir desde</label>
+      <input type="date" id="printFrom">
+    </div>
+    <div class="field-group">
+      <label for="printTo">Imprimir hasta</label>
+      <input type="date" id="printTo">
+    </div>
+    <button class="btn-primary" id="printBtn">Imprimir período</button>
+    <button class="btn-ghost" id="addRowBtn">+ Agregar día</button>
+    <button class="btn-ghost" id="exportBtn">⬇ Exportar datos</button>
+    <button class="btn-ghost" id="importBtn">⬆ Importar datos</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none;">
+    <button class="btn-ghost" id="syncBtn">🔄 Sincronización</button>
+    <div class="status" id="toolbarStatus" style="margin-left:auto;"></div>
+  </div>
+
+  <div class="table-shell">
+    <div class="scroll-area">
+      <table id="diaryTable">
+        <thead>
+          <tr>
+            <th style="min-width:110px;">Fecha</th>
+            <th style="min-width:80px;">Peso (kg)</th>
+            <th style="min-width:150px;">Desayuno</th>
+            <th style="min-width:150px;">1ª Colación</th>
+            <th style="min-width:150px;">Almuerzo</th>
+            <th style="min-width:150px;">2ª Colación</th>
+            <th style="min-width:150px;">Merienda</th>
+            <th style="min-width:150px;">Cena</th>
+            <th class="no-print" style="min-width:36px;"></th>
+          </tr>
+        </thead>
+        <tbody id="diaryBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <div class="legend" id="storageLegend">Los datos se guardan automáticamente.</div>
+  </footer>
+
+  </section>
+
+  <section id="tab-graficos" class="tab-panel">
+
+    <div class="toolbar no-print">
+      <div class="field-group">
+        <label for="chartFrom">Desde</label>
+        <input type="date" id="chartFrom">
+      </div>
+      <div class="field-group">
+        <label for="chartTo">Hasta</label>
+        <input type="date" id="chartTo">
+      </div>
+      <button class="btn-primary" id="applyChartRange">Aplicar período</button>
+      <button class="btn-ghost" id="resetChartRange">Período por defecto</button>
+    </div>
+
+    <div class="stat-banner">
+      <div class="stat-box">
+        <div class="stat-label">Peso inicial</div>
+        <div class="stat-value" id="statPesoInicial">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Peso final</div>
+        <div class="stat-value" id="statPesoFinal">—</div>
+      </div>
+      <div class="stat-box highlight">
+        <div class="stat-label">Descenso en el período</div>
+        <div class="stat-value" id="statDescenso">—</div>
+      </div>
+      <div class="stat-box highlight">
+        <div class="stat-label">Falta para la meta (95 kg)</div>
+        <div class="stat-value" id="statFaltaMeta">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Días de seguimiento</div>
+        <div class="stat-value" id="statDiasSeguimiento">—</div>
+      </div>
+      <div class="stat-box highlight">
+        <div class="stat-label">Días estimados para la meta</div>
+        <div class="stat-value" id="statDiasParaMeta">—</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Evolución del peso</h3>
+      <div class="chart-canvas-wrap"><canvas id="weightChart"></canvas></div>
+      <div class="chart-empty no-data" id="weightEmpty">Todavía no hay suficientes datos de peso cargados en este período.</div>
+    </div>
+
+  </section>
+
+</div>
+
+<div class="modal-overlay no-print" id="syncModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🔄 Sincronización entre dispositivos</h2>
+      <button class="modal-close" id="syncModalClose" type="button">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-text">
+        Conectá este dispositivo a tu base de datos gratuita de Firebase para que los datos se sincronicen
+        automáticamente con tus otros dispositivos (por ejemplo, tu computadora).
+      </p>
+
+      <div id="syncStatusBox" class="sync-status-box">
+        <span class="dot"></span> <span id="syncStatusText">Sin conectar — los datos se guardan solo en este dispositivo.</span>
+      </div>
+
+      <div class="field-group full">
+        <label for="syncConfigInput">Configuración de Firebase (pegá el objeto "firebaseConfig" tal como te lo da la consola)</label>
+        <textarea id="syncConfigInput" rows="7" placeholder='{
+  apiKey: "AIza...",
+  authDomain: "tu-proyecto.firebaseapp.com",
+  projectId: "tu-proyecto",
+  storageBucket: "tu-proyecto.appspot.com",
+  messagingSenderId: "...",
+  appId: "..."
+}'></textarea>
+      </div>
+
+      <div class="field-group full">
+        <label for="syncCodeInput">Código de sincronización (inventá una palabra/frase única; usá exactamente la misma en todos tus dispositivos)</label>
+        <input type="text" id="syncCodeInput" placeholder="ej: hernan-diario-2026">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-primary" id="syncConnectBtn">Conectar y sincronizar</button>
+        <button class="btn-ghost" id="syncDisconnectBtn">Desconectar</button>
+      </div>
+
+      <p class="modal-hint">
+        La primera vez, conectá el dispositivo que ya tiene tus datos cargados — ese va a "subir" la información.
+        Los siguientes dispositivos que conectes con el mismo código van a descargar automáticamente esos datos.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const START_DATE = "2026-07-23";
+const INITIAL_DAYS = 106;
+const STORAGE_KEY = "diario-entries";
+const MEAL_FIELDS = ["desayuno","colacion1","almuerzo","colacion2","merienda","cena"];
+const DAY_NAMES = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+
+let entries = {};
+let dates = [];
+let saveTimeout = null;
+
+// Capa de almacenamiento híbrida:
+// - Si el archivo se abre dentro del panel de artefactos de Claude, usa window.storage (persiste en tu cuenta).
+// - Si se abre directamente en el navegador (doble clic, servidor propio, etc.), usa localStorage de ese navegador.
+const hasCloudStorage = (typeof window !== "undefined") && window.storage && typeof window.storage.get === "function";
+
+async function storageGet(key){
+  if(hasCloudStorage){
+    try{
+      const result = await window.storage.get(key, false);
+      return result ? result.value : null;
+    } catch(e){
+      // clave inexistente todavía (primer uso) u otro error de lectura: se trata como "sin datos"
+      return null;
+    }
+  } else {
+    return localStorage.getItem(key);
+  }
+}
+
+async function storageSet(key, value){
+  if(hasCloudStorage){
+    await window.storage.set(key, value, false);
+  } else {
+    localStorage.setItem(key, value);
+  }
+}
+
+function fmtDateKey(d){
+  return d.toISOString().slice(0,10);
+}
+
+function parseDateLocal(str){
+  const [y,m,d] = str.split("-").map(Number);
+  return new Date(y, m-1, d);
+}
+
+function fmtDisplay(dateKey){
+  const d = parseDateLocal(dateKey);
+  const dayNum = String(d.getDate()).padStart(2,"0");
+  const monthNames = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  return { top: `${dayNum} ${monthNames[d.getMonth()]}`, dayName: DAY_NAMES[d.getDay()] };
+}
+
+function isToday(dateKey){
+  const t = new Date();
+  return dateKey === fmtDateKey(t);
+}
+
+function buildInitialDates(){
+  const start = parseDateLocal(START_DATE);
+  const out = [];
+  for(let i=0;i<INITIAL_DAYS;i++){
+    const d = new Date(start);
+    d.setDate(d.getDate()+i);
+    out.push(fmtDateKey(d));
+  }
+  return out;
+}
+
+function setStatus(saving){
+  const ind = document.getElementById("statusIndicator");
+  const txt = document.getElementById("statusText");
+  if(saving){
+    ind.classList.remove("saved");
+    txt.textContent = "Guardando...";
+  } else {
+    ind.classList.add("saved");
+    txt.textContent = "Guardado";
+  }
+}
+
+function ensureEarlyDates(){
+  if(!dates.length) return;
+  const earlyStart = parseDateLocal(START_DATE);
+  const firstExisting = parseDateLocal(dates[0]);
+  if(firstExisting > earlyStart){
+    const toPrepend = [];
+    const d = new Date(earlyStart);
+    while(d < firstExisting){
+      toPrepend.push(fmtDateKey(d));
+      d.setDate(d.getDate()+1);
+    }
+    dates = toPrepend.concat(dates);
+  }
+}
+
+async function loadData(){
+  try{
+    const raw = await storageGet(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      entries = parsed.entries || {};
+      dates = parsed.dates && parsed.dates.length ? parsed.dates : buildInitialDates();
+      ensureEarlyDates();
+    } else {
+      entries = {};
+      dates = buildInitialDates();
+    }
+  } catch(e){
+    entries = {};
+    dates = buildInitialDates();
+  }
+  renderTable();
+  setStatus(false);
+  scheduleSave();
+}
+
+function scheduleSave(){
+  setStatus(true);
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveData, 500);
+}
+
+async function saveData(){
+  try{
+    await storageSet(STORAGE_KEY, JSON.stringify({ entries, dates }));
+    setStatus(false);
+  } catch(e){
+    console.error("Error al guardar:", e);
+    document.getElementById("statusText").textContent = "Error al guardar";
+  }
+}
+
+function ensureEntry(dateKey){
+  if(!entries[dateKey]){
+    entries[dateKey] = { peso:"", desayuno:"", colacion1:"", almuerzo:"", colacion2:"", merienda:"", cena:"" };
+  }
+  return entries[dateKey];
+}
+
+function renderTable(){
+  const tbody = document.getElementById("diaryBody");
+  tbody.innerHTML = "";
+  dates.forEach(dateKey => {
+    const entry = ensureEntry(dateKey);
+    const disp = fmtDisplay(dateKey);
+    const tr = document.createElement("tr");
+    tr.dataset.date = dateKey;
+    if(isToday(dateKey)) tr.classList.add("today");
+
+    const tdDate = document.createElement("td");
+    tdDate.className = "date-cell";
+    tdDate.innerHTML = `<span class="day-name">${disp.dayName}</span>${disp.top}`;
+    tr.appendChild(tdDate);
+
+    const tdPeso = document.createElement("td");
+    tdPeso.className = "peso-cell";
+    const pesoInput = document.createElement("input");
+    pesoInput.type = "text";
+    pesoInput.inputMode = "decimal";
+    pesoInput.placeholder = "—";
+    pesoInput.value = entry.peso || "";
+    pesoInput.addEventListener("input", () => { entry.peso = pesoInput.value; scheduleSave(); });
+    tdPeso.appendChild(pesoInput);
+    tr.appendChild(tdPeso);
+
+    MEAL_FIELDS.forEach(field => {
+      const td = document.createElement("td");
+      td.className = "meal-cell";
+      const ta = document.createElement("textarea");
+      ta.rows = 2;
+      ta.placeholder = "-";
+      ta.value = entry[field] || "";
+      ta.addEventListener("input", () => { entry[field] = ta.value; scheduleSave(); });
+      td.appendChild(ta);
+      tr.appendChild(td);
+    });
+
+    const tdActions = document.createElement("td");
+    tdActions.className = "row-actions no-print";
+    const delBtn = document.createElement("button");
+    delBtn.innerHTML = "✕";
+    delBtn.title = "Eliminar día";
+    delBtn.addEventListener("click", () => {
+      dates = dates.filter(d => d !== dateKey);
+      delete entries[dateKey];
+      renderTable();
+      scheduleSave();
+    });
+    tdActions.appendChild(delBtn);
+    tr.appendChild(tdActions);
+
+    tbody.appendChild(tr);
+  });
+
+  const from = document.getElementById("printFrom");
+  const to = document.getElementById("printTo");
+  if(!from.value && dates.length) from.value = dates[0];
+  if(!to.value && dates.length) to.value = dates[dates.length-1];
+}
+
+function addRow(){
+  const lastDate = dates.length ? parseDateLocal(dates[dates.length-1]) : parseDateLocal(START_DATE);
+  const next = new Date(lastDate);
+  next.setDate(next.getDate()+1);
+  const key = fmtDateKey(next);
+  if(!dates.includes(key)){
+    dates.push(key);
+    ensureEntry(key);
+    renderTable();
+    scheduleSave();
+    document.getElementById("printTo").value = key;
+    const shell = document.querySelector(".scroll-area");
+    shell.scrollTop = shell.scrollHeight;
+  }
+}
+
+function printRange(){
+  const from = document.getElementById("printFrom").value;
+  const to = document.getElementById("printTo").value;
+  if(!from || !to){ window.print(); return; }
+  const rows = document.querySelectorAll("#diaryBody tr");
+  rows.forEach(tr => {
+    const d = tr.dataset.date;
+    if(d < from || d > to){
+      tr.classList.add("hide-for-print");
+    } else {
+      tr.classList.remove("hide-for-print");
+    }
+  });
+  window.print();
+}
+
+window.addEventListener("afterprint", () => {
+  document.querySelectorAll("#diaryBody tr.hide-for-print").forEach(tr => tr.classList.remove("hide-for-print"));
+});
+
+document.getElementById("addRowBtn").addEventListener("click", addRow);
+document.getElementById("printBtn").addEventListener("click", printRange);
+
+/* ---------- Exportar / Importar ---------- */
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const payload = JSON.stringify({ entries, dates }, null, 2);
+  const blob = new Blob([payload], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const today = fmtDateKey(new Date());
+  a.href = url;
+  a.download = `diario_alimentacion_backup_${today}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("importBtn").addEventListener("click", () => {
+  document.getElementById("importFile").click();
+});
+
+document.getElementById("importFile").addEventListener("change", (ev) => {
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(!parsed.entries || !parsed.dates){
+        alert("El archivo no tiene el formato esperado.");
+        return;
+      }
+      const overwrite = confirm(
+        "¿Reemplazar todos los datos actuales por los del archivo importado?\n\n" +
+        "Aceptar = reemplazar todo.\nCancelar = combinar (los datos importados completan fechas faltantes sin borrar lo que ya tenés)."
+      );
+      if(overwrite){
+        entries = parsed.entries;
+        dates = parsed.dates;
+      } else {
+        parsed.dates.forEach(d => {
+          if(!dates.includes(d)) dates.push(d);
+        });
+        dates.sort();
+        Object.keys(parsed.entries).forEach(d => {
+          const incoming = parsed.entries[d];
+          const current = entries[d];
+          const currentIsEmpty = !current || Object.values(current).every(v => !v || !String(v).trim());
+          if(currentIsEmpty){
+            entries[d] = incoming;
+          }
+        });
+      }
+      renderTable();
+      scheduleSave();
+      setupChartRangeDefaults();
+      if(document.getElementById("tab-graficos").classList.contains("active")){
+        renderCharts();
+      }
+      alert("Datos importados correctamente.");
+    } catch(err){
+      alert("No se pudo leer el archivo. Verificá que sea un backup JSON válido exportado desde esta misma planilla.");
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value = "";
+});
+
+document.getElementById("storageLegend").textContent = hasCloudStorage
+  ? "Los datos se guardan automáticamente en tu cuenta de Claude."
+  : "Los datos se guardan automáticamente en este navegador (no se sincronizan entre dispositivos).";
+
+/* ---------- Solapas ---------- */
+const tabButtons = document.querySelectorAll(".tab-btn");
+const tabPanels = document.querySelectorAll(".tab-panel");
+tabButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    tabButtons.forEach(b => b.classList.remove("active"));
+    tabPanels.forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    if(btn.dataset.tab === "graficos"){
+      renderCharts();
+    }
+  });
+});
+
+/* ---------- Gráficos ---------- */
+const GOAL_WEIGHT = 95;
+let weightChartInstance = null;
+
+function parsePeso(str){
+  if(!str) return NaN;
+  const cleaned = String(str).trim().replace(",", ".").replace(/[^\d.\-]/g, "");
+  if(cleaned === "" || cleaned === "-") return NaN;
+  const val = parseFloat(cleaned);
+  return isNaN(val) ? NaN : val;
+}
+
+function computeLastDataDate(){
+  let last = null;
+  [...dates].sort().forEach(dateKey => {
+    const e = entries[dateKey];
+    if(!e) return;
+    const hasData = [e.peso, e.desayuno, e.colacion1, e.almuerzo, e.colacion2, e.merienda, e.cena]
+      .some(v => v && String(v).trim().length > 0);
+    if(hasData) last = dateKey;
+  });
+  return last;
+}
+
+function getDefaultChartRange(){
+  const sorted = [...dates].sort();
+  const from = sorted.includes(START_DATE) ? START_DATE : (sorted[0] || START_DATE);
+  const lastData = computeLastDataDate();
+  const to = lastData || sorted[sorted.length-1] || from;
+  return { from, to };
+}
+
+function setupChartRangeDefaults(){
+  const range = getDefaultChartRange();
+  const fromEl = document.getElementById("chartFrom");
+  const toEl = document.getElementById("chartTo");
+  if(fromEl && toEl){
+    fromEl.value = range.from;
+    toEl.value = range.to;
+  }
+}
+
+function bindChartControls(){
+  const applyBtn = document.getElementById("applyChartRange");
+  const resetBtn = document.getElementById("resetChartRange");
+  if(applyBtn) applyBtn.addEventListener("click", () => renderCharts());
+  if(resetBtn) resetBtn.addEventListener("click", () => {
+    setupChartRangeDefaults();
+    renderCharts();
+  });
+}
+bindChartControls();
+
+function renderCharts(){
+  try{
+    if(typeof Chart === "undefined"){
+      console.error("Chart.js no se cargó correctamente.");
+      return;
+    }
+    const from = document.getElementById("chartFrom").value;
+    const to = document.getElementById("chartTo").value;
+    if(!from || !to) return;
+
+    const rangeDates = dates.filter(d => d >= from && d <= to).sort();
+
+    renderWeightChart(rangeDates);
+  } catch(err){
+    console.error("Error al renderizar los gráficos:", err);
+  }
+}
+
+function renderWeightChart(rangeDates){
+  const points = rangeDates
+    .map(d => ({ date: d, peso: parsePeso(entries[d] && entries[d].peso) }))
+    .filter(p => !isNaN(p.peso));
+
+  const wrap = document.getElementById("weightChart").closest(".chart-canvas-wrap");
+  const emptyMsg = document.getElementById("weightEmpty");
+  const faltaEl = document.getElementById("statFaltaMeta");
+  const diasSeguimientoEl = document.getElementById("statDiasSeguimiento");
+  const diasParaMetaEl = document.getElementById("statDiasParaMeta");
+
+  if(points.length === 0){
+    wrap.style.display = "none";
+    emptyMsg.classList.add("visible");
+    document.getElementById("statPesoInicial").textContent = "—";
+    document.getElementById("statPesoFinal").textContent = "—";
+    document.getElementById("statDescenso").textContent = "—";
+    document.getElementById("statDescenso").classList.remove("negative");
+    faltaEl.textContent = "—";
+    faltaEl.classList.remove("negative");
+    diasSeguimientoEl.textContent = "—";
+    diasParaMetaEl.textContent = "—";
+    diasParaMetaEl.classList.remove("negative");
+    if(weightChartInstance){ weightChartInstance.destroy(); weightChartInstance = null; }
+    return;
+  }
+
+  wrap.style.display = "";
+  emptyMsg.classList.remove("visible");
+
+  const first = points[0].peso;
+  const last = points[points.length-1].peso;
+  const descenso = first - last;
+
+  document.getElementById("statPesoInicial").textContent = first.toFixed(1) + " kg";
+  document.getElementById("statPesoFinal").textContent = last.toFixed(1) + " kg";
+
+  const descensoEl = document.getElementById("statDescenso");
+  if(points.length < 2){
+    descensoEl.textContent = "—";
+    descensoEl.classList.remove("negative");
+  } else if(descenso >= 0){
+    descensoEl.textContent = "-" + descenso.toFixed(1) + " kg";
+    descensoEl.classList.remove("negative");
+  } else {
+    descensoEl.textContent = "+" + Math.abs(descenso).toFixed(1) + " kg";
+    descensoEl.classList.add("negative");
+  }
+
+  // Cuánto falta para la meta de 95 kg (según el último peso registrado)
+  const faltaMeta = last - GOAL_WEIGHT;
+  if(faltaMeta <= 0){
+    faltaEl.textContent = "¡Meta alcanzada! (-" + Math.abs(faltaMeta).toFixed(1) + " kg)";
+    faltaEl.classList.remove("negative");
+  } else {
+    faltaEl.textContent = faltaMeta.toFixed(1) + " kg";
+    faltaEl.classList.add("negative");
+  }
+
+  // Días de seguimiento: desde el primer peso registrado hasta el último, dentro del período
+  const firstDate = parseDateLocal(points[0].date);
+  const lastDate = parseDateLocal(points[points.length-1].date);
+  const diasTranscurridos = Math.round((lastDate - firstDate) / (1000*60*60*24));
+  diasSeguimientoEl.textContent = diasTranscurridos + (diasTranscurridos === 1 ? " día" : " días");
+
+  // Proyección: con la tendencia actual (kg perdidos por día), cuántos días faltan para la meta
+  if(faltaMeta <= 0){
+    diasParaMetaEl.textContent = "¡Ya la alcanzaste!";
+    diasParaMetaEl.classList.remove("negative");
+  } else if(points.length < 2 || diasTranscurridos <= 0){
+    diasParaMetaEl.textContent = "Datos insuficientes";
+    diasParaMetaEl.classList.remove("negative");
+  } else {
+    const ritmoDiario = descenso / diasTranscurridos; // kg perdidos por día
+    if(ritmoDiario <= 0){
+      diasParaMetaEl.textContent = "Sin tendencia de baja";
+      diasParaMetaEl.classList.add("negative");
+    } else {
+      const diasProyectados = Math.ceil(faltaMeta / ritmoDiario);
+      diasParaMetaEl.textContent = diasProyectados + (diasProyectados === 1 ? " día" : " días");
+      diasParaMetaEl.classList.remove("negative");
+    }
+  }
+
+  const labels = points.map(p => {
+    const dd = parseDateLocal(p.date);
+    return String(dd.getDate()).padStart(2,"0") + "/" + String(dd.getMonth()+1).padStart(2,"0");
+  });
+  const data = points.map(p => p.peso);
+  const goalLine = points.map(() => GOAL_WEIGHT);
+
+  if(weightChartInstance){ weightChartInstance.destroy(); weightChartInstance = null; }
+  const ctx = document.getElementById("weightChart").getContext("2d");
+  weightChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Peso (kg)",
+          data: data,
+          borderColor: "#2F4739",
+          backgroundColor: "rgba(47,71,57,0.08)",
+          pointBackgroundColor: "#B8912B",
+          pointRadius: 3,
+          tension: 0.25,
+          fill: true,
+          spanGaps: true
+        },
+        {
+          label: "Meta (" + GOAL_WEIGHT + " kg)",
+          data: goalLine,
+          borderColor: "#B85C4A",
+          borderDash: [6, 5],
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: true, position: "bottom" } },
+      scales: {
+        y: { min: 90, ticks: { callback: v => v + " kg" } }
+      }
+    }
+  });
+}
+
+loadData().then(() => {
+  setupChartRangeDefaults();
+  initCloudSync();
+});
+
+/* ================= Sincronización con Firebase (Firestore) ================= */
+const SYNC_CONFIG_KEY = "diario-sync-config";
+const DEVICE_ID_KEY = "diario-device-id";
+
+let cloudApp = null;
+let cloudDb = null;
+let cloudDocRef = null;
+let cloudUnsubscribe = null;
+let cloudReady = false;
+
+function getDeviceId(){
+  let id = localStorage.getItem(DEVICE_ID_KEY);
+  if(!id){
+    id = "dev-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem(DEVICE_ID_KEY, id);
+  }
+  return id;
+}
+const DEVICE_ID = getDeviceId();
+
+function getSyncConfig(){
+  try{
+    const raw = localStorage.getItem(SYNC_CONFIG_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+
+function saveSyncConfig(cfg){
+  localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(cfg));
+}
+
+function clearSyncConfig(){
+  localStorage.removeItem(SYNC_CONFIG_KEY);
+}
+
+function sanitizeSyncCode(code){
+  return String(code).trim().toLowerCase().replace(/[^a-z0-9\-_]+/g, "-").slice(0, 120) || "default";
+}
+
+// Parser tolerante: acepta tanto JSON válido como el objeto literal tal cual lo
+// muestra la consola de Firebase (claves sin comillas).
+function parseFirebaseConfig(text){
+  const trimmed = text.trim();
+  try{
+    return JSON.parse(trimmed);
+  } catch(e){
+    try{
+      return Function('"use strict"; return (' + trimmed + ");")();
+    } catch(e2){
+      throw new Error("No se pudo interpretar la configuración pegada.");
+    }
+  }
+}
+
+function setSyncStatus(state, message){
+  const box = document.getElementById("syncStatusBox");
+  const text = document.getElementById("syncStatusText");
+  box.classList.remove("connected", "error");
+  if(state === "connected") box.classList.add("connected");
+  if(state === "error") box.classList.add("error");
+  text.textContent = message;
+}
+
+function updateStorageLegendForSync(){
+  const legend = document.getElementById("storageLegend");
+  if(cloudReady){
+    legend.textContent = "Sincronización en la nube activa — los datos se guardan y comparten automáticamente entre tus dispositivos.";
+  } else {
+    legend.textContent = hasCloudStorage
+      ? "Los datos se guardan automáticamente en tu cuenta de Claude."
+      : "Los datos se guardan automáticamente en este navegador (no se sincronizan entre dispositivos).";
+  }
+}
+
+async function initCloudSync(){
+  const cfg = getSyncConfig();
+  if(!cfg || !cfg.firebaseConfig || !cfg.syncCode) return;
+  await connectCloudSync(cfg.firebaseConfig, cfg.syncCode, true);
+}
+
+async function connectCloudSync(firebaseConfig, syncCodeRaw, silent){
+  const syncCode = sanitizeSyncCode(syncCodeRaw);
+  try{
+    if(!silent) setSyncStatus("idle", "Conectando...");
+
+    if(cloudUnsubscribe){ cloudUnsubscribe(); cloudUnsubscribe = null; }
+    if(cloudApp){ try{ await cloudApp.delete(); } catch(e){} cloudApp = null; }
+
+    cloudApp = firebase.initializeApp(firebaseConfig, "diarioApp_" + Date.now());
+    await cloudApp.auth().signInAnonymously();
+    cloudDb = cloudApp.firestore();
+    cloudDocRef = cloudDb.collection("diarios").doc(syncCode);
+
+    const snap = await cloudDocRef.get();
+    if(snap.exists){
+      // Ya hay datos en la nube con este código: los tomamos como fuente de verdad.
+      const data = snap.data();
+      entries = data.entries || {};
+      dates = (data.dates && data.dates.length) ? data.dates : dates;
+      renderTable();
+      setupChartRangeDefaults();
+      if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
+    } else {
+      // No existe todavía: este dispositivo "siembra" la nube con lo que ya tiene cargado.
+      cloudReady = true;
+      await pushToCloud();
+    }
+
+    cloudUnsubscribe = cloudDocRef.onSnapshot((doc) => {
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.deviceId === DEVICE_ID) return; // eco de nuestro propio guardado, lo ignoramos
+      entries = data.entries || {};
+      dates = (data.dates && data.dates.length) ? data.dates : dates;
+      renderTable();
+      setupChartRangeDefaults();
+      if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
+      setSyncStatus("connected", "Sincronizado — última actualización recibida de otro dispositivo.");
+    }, (err) => {
+      console.error("Error de sincronización:", err);
+      setSyncStatus("error", "Se perdió la conexión con la sincronización: " + err.message);
+    });
+
+    cloudReady = true;
+    saveSyncConfig({ firebaseConfig, syncCode: syncCodeRaw });
+    updateStorageLegendForSync();
+    setSyncStatus("connected", "Conectado. Código de sincronización: " + syncCode);
+  } catch(err){
+    console.error("Error al conectar la sincronización:", err);
+    cloudReady = false;
+    setSyncStatus("error", "No se pudo conectar: " + err.message);
+  }
+}
+
+async function pushToCloud(){
+  if(!cloudDocRef) return;
+  try{
+    await cloudDocRef.set({
+      entries,
+      dates,
+      deviceId: DEVICE_ID,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(err){
+    console.error("No se pudo enviar a la nube:", err);
+    setSyncStatus("error", "No se pudieron enviar los últimos cambios: " + err.message);
+  }
+}
+
+function disconnectCloudSync(){
+  if(cloudUnsubscribe){ cloudUnsubscribe(); cloudUnsubscribe = null; }
+  if(cloudApp){ cloudApp.delete().catch(() => {}); cloudApp = null; }
+  cloudDb = null;
+  cloudDocRef = null;
+  cloudReady = false;
+  clearSyncConfig();
+  updateStorageLegendForSync();
+  setSyncStatus("idle", "Sin conectar — los datos se guardan solo en este dispositivo.");
+}
+
+// Modal de sincronización
+const syncModal = document.getElementById("syncModal");
+document.getElementById("syncBtn").addEventListener("click", () => {
+  const cfg = getSyncConfig();
+  if(cfg){
+    document.getElementById("syncConfigInput").value = JSON.stringify(cfg.firebaseConfig, null, 2);
+    document.getElementById("syncCodeInput").value = cfg.syncCode;
+  }
+  syncModal.classList.add("open");
+});
+document.getElementById("syncModalClose").addEventListener("click", () => syncModal.classList.remove("open"));
+syncModal.addEventListener("click", (e) => { if(e.target === syncModal) syncModal.classList.remove("open"); });
+
+document.getElementById("syncConnectBtn").addEventListener("click", async () => {
+  const rawConfig = document.getElementById("syncConfigInput").value;
+  const syncCode = document.getElementById("syncCodeInput").value;
+  if(!rawConfig.trim() || !syncCode.trim()){
+    setSyncStatus("error", "Completá la configuración de Firebase y un código de sincronización.");
+    return;
+  }
+  let firebaseConfig;
+  try{
+    firebaseConfig = parseFirebaseConfig(rawConfig);
+  } catch(err){
+    setSyncStatus("error", err.message);
+    return;
+  }
+  await connectCloudSync(firebaseConfig, syncCode, false);
+});
+
+document.getElementById("syncDisconnectBtn").addEventListener("click", () => {
+  disconnectCloudSync();
+});
+
+// Hook: cada vez que se guarda localmente, si hay sincronización activa, también se envía a la nube.
+const originalSaveData = saveData;
+saveData = async function(){
+  await originalSaveData();
+  if(cloudReady){ pushToCloud(); }
+};
+
+// Registro del service worker (permite que la app funcione offline una vez instalada)
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
+
+</body>
+</html>
