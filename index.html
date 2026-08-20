@@ -444,13 +444,246 @@
   .sync-status-box.connected{ color: var(--forest-dark); }
   .sync-status-box.error .dot{ background: #C0463A; }
 
+  /* Menú hamburguesa (se abre con hover o click) */
+  .hamburger-menu{
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 90;
+  }
+  .hamburger-btn{
+    width: 42px; height: 42px;
+    padding: 0;
+    background: var(--forest);
+    color: var(--white);
+    border-radius: 50%;
+    font-size: 1.1rem;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .hamburger-btn:hover{ background: var(--forest-dark); }
+  .hamburger-panel{
+    display:none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--white);
+    border: 1px solid var(--paper-line);
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.14);
+    padding: 8px;
+    min-width: 200px;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .hamburger-menu:hover .hamburger-panel,
+  .hamburger-menu.open .hamburger-panel{
+    display:flex;
+  }
+  /* pequeño puente invisible para que el hover no se corte entre botón y panel */
+  .hamburger-menu::after{
+    content:"";
+    position:absolute;
+    top: 100%; right:0;
+    width: 100%; height: 8px;
+  }
+  .hamburger-panel button{
+    text-align:left;
+    background: transparent;
+    color: var(--ink);
+    border: none;
+    padding: 9px 10px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+  }
+  .hamburger-panel button:hover{ background: var(--paper); }
+
+  /* Calendario de actividad física */
+  .calendar-card{
+    background: var(--white);
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    padding: 20px;
+  }
+  .calendar-nav{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .calendar-nav button{
+    background: transparent;
+    border: 1px solid var(--paper-line);
+    color: var(--forest-dark);
+    width: 34px; height: 34px;
+    padding: 0;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  .calendar-nav button:hover{ background: var(--paper); }
+  .calendar-title{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size: 1.15rem;
+    color: var(--forest-dark);
+    text-transform: capitalize;
+  }
+  .calendar-grid{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .calendar-weekday{
+    text-align:center;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    padding-bottom: 4px;
+  }
+  .calendar-day{
+    aspect-ratio: 1;
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    background: var(--paper);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size: 0.82rem;
+    color: var(--ink);
+    position: relative;
+    transition: transform 0.06s ease;
+  }
+  .calendar-day:hover{ transform: scale(1.04); border-color: var(--gold); }
+  .calendar-day.empty{ visibility:hidden; cursor:default; }
+  .calendar-day.today{ font-weight:700; border-color: var(--forest); }
+  .calendar-day.active{
+    background: var(--forest);
+    color: var(--white);
+    border-color: var(--forest-dark);
+  }
+  .calendar-day .note-dot{
+    width:5px; height:5px; border-radius:50%;
+    background: var(--gold);
+    margin-top: 3px;
+  }
+  .calendar-legend{
+    display:flex; gap:16px; margin-top:16px; font-size:0.76rem; color:var(--ink-soft); flex-wrap:wrap;
+  }
+  .calendar-legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .legend-swatch{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+  .legend-swatch.active{ background: var(--forest); }
+  .legend-swatch.today{ background: var(--paper); border:1px solid var(--forest); }
+
+  .activity-toggle{
+    display:flex; align-items:center; gap:10px;
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+    cursor:pointer;
+  }
+  .activity-toggle input{ width:18px; height:18px; accent-color: var(--forest); }
+
+  /* Vista mobile: un solo día por pantalla */
+  .mobile-day-view{ display:none; }
+  .mobile-day-card{
+    background: var(--white);
+    border: 1px solid var(--paper-line);
+    border-radius: 6px;
+    padding: 18px;
+    margin-top: 16px;
+  }
+  .mobile-day-card.today{ border-color: var(--forest); }
+  .mobile-day-nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom: 16px;
+  }
+  .mobile-day-nav button{
+    background: var(--forest);
+    color: var(--white);
+    width: 38px; height:38px;
+    padding:0;
+    border-radius: 50%;
+    font-size: 1.1rem;
+  }
+  .mobile-day-label{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size: 1.15rem;
+    color: var(--forest-dark);
+    text-align:center;
+  }
+  .mobile-day-label .yr{ display:block; font-size:0.72rem; font-weight:500; color:var(--ink-soft); }
+  .mobile-field{ margin-bottom: 14px; }
+  .mobile-field label{
+    display:block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+  .mobile-field input[type=text]{
+    width:100%;
+    font-size: 1.05rem;
+    font-weight:600;
+    color: var(--forest-dark);
+    padding: 10px 12px;
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    background: var(--paper);
+  }
+  .mobile-field textarea{
+    width:100%;
+    font-size: 0.92rem;
+    padding: 10px 12px;
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    background: var(--paper);
+    min-height: 56px;
+    resize: vertical;
+    font-family:'Inter',sans-serif;
+  }
+  .mobile-field input:focus, .mobile-field textarea:focus{
+    outline: 2px solid var(--gold); outline-offset:-1px; background: var(--white);
+  }
+  .mobile-only-hint{
+    display:none;
+    font-size: 0.76rem;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin-top: 10px;
+    text-align:center;
+  }
+
+  @media (max-width: 760px){
+    body{ padding: 18px 14px 60px; }
+    h1{ font-size: 1.7rem; }
+    #tab-diario .toolbar{ display:none; }
+    #tab-diario .table-shell{ display:none; }
+    .mobile-day-view{ display:block; }
+    .mobile-only-hint{ display:block; }
+    .stat-banner{ flex-direction:column; }
+    .stat-box{ min-width: 0; }
+    .calendar-day{ font-size:0.72rem; }
+  }
+
+  /* Filas ocultas al "Visualizar período" (aplica en pantalla e impresión) */
+  tr.row-hidden{ display:none; }
+
   /* Print styles */
   @media print{
     body{ padding: 0; background: white; }
-    .toolbar, .row-actions, footer, .no-print{ display:none !important; }
+    .toolbar, footer, .no-print{ display:none !important; }
     .tabs{ display:none !important; }
     #tab-graficos{ display:none !important; }
+    #tab-actividad{ display:none !important; }
     #tab-diario{ display:block !important; }
+    #tab-diario .table-shell{ display:block !important; }
+    .mobile-day-view{ display:none !important; }
     header{ border-bottom: 2px solid #000; margin-bottom: 10px; }
     h1{ font-size: 1.5rem; color:#000; }
     .subtitle{ color:#333; }
@@ -474,7 +707,6 @@
     .peso-cell input{ padding: 6px; }
     .meal-cell textarea{ padding: 6px; min-height: 32px; }
     .meal-cell textarea, .peso-cell input{ color:#000; }
-    tr.hide-for-print{ display:none !important; }
     @page{ size: A4 landscape; margin: 10mm; }
   }
 </style>
@@ -490,29 +722,76 @@
     <div class="status" id="statusIndicator"><span class="dot"></span><span id="statusText">Guardado</span></div>
   </header>
 
+  <div class="hamburger-menu no-print" id="hamburgerMenu">
+    <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menú">☰</button>
+    <div class="hamburger-panel">
+      <button id="exportBtn" type="button">⬇ Exportar datos</button>
+      <button id="importBtn" type="button">⬆ Importar datos</button>
+      <button id="syncBtn" type="button">🔄 Sincronización</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none;">
+  </div>
+
   <nav class="tabs no-print">
     <button class="tab-btn active" data-tab="diario" type="button">📓 Diario</button>
     <button class="tab-btn" data-tab="graficos" type="button">📊 Evolución</button>
+    <button class="tab-btn" data-tab="actividad" type="button">🏃 Actividad física</button>
   </nav>
 
   <section id="tab-diario" class="tab-panel active">
 
   <div class="toolbar no-print">
     <div class="field-group">
-      <label for="printFrom">Imprimir desde</label>
+      <label for="printFrom">Desde</label>
       <input type="date" id="printFrom">
     </div>
     <div class="field-group">
-      <label for="printTo">Imprimir hasta</label>
+      <label for="printTo">Hasta</label>
       <input type="date" id="printTo">
     </div>
-    <button class="btn-primary" id="printBtn">Imprimir período</button>
-    <button class="btn-ghost" id="addRowBtn">+ Agregar día</button>
-    <button class="btn-ghost" id="exportBtn">⬇ Exportar datos</button>
-    <button class="btn-ghost" id="importBtn">⬆ Importar datos</button>
-    <input type="file" id="importFile" accept="application/json" style="display:none;">
-    <button class="btn-ghost" id="syncBtn">🔄 Sincronización</button>
+    <button class="btn-primary" id="visualizarBtn">👁 Visualizar período</button>
+    <button class="btn-ghost" id="verTodoBtn">Ver todo</button>
+    <button class="btn-ghost" id="imprimirBtn">🖨️ Imprimir</button>
     <div class="status" id="toolbarStatus" style="margin-left:auto;"></div>
+  </div>
+
+  <div class="mobile-day-view no-print" id="mobileDayView">
+    <div class="mobile-day-card" id="mobileDayCard">
+      <div class="mobile-day-nav">
+        <button id="mobilePrevDay" type="button">‹</button>
+        <div class="mobile-day-label" id="mobileDayLabel">—</div>
+        <button id="mobileNextDay" type="button">›</button>
+      </div>
+      <div class="mobile-field">
+        <label for="mobilePeso">Peso (kg)</label>
+        <input type="text" inputmode="decimal" id="mobilePeso" placeholder="—">
+      </div>
+      <div class="mobile-field">
+        <label for="mobile_desayuno">Desayuno</label>
+        <textarea id="mobile_desayuno" rows="2" placeholder="-"></textarea>
+      </div>
+      <div class="mobile-field">
+        <label for="mobile_colacion1">1ª Colación</label>
+        <textarea id="mobile_colacion1" rows="2" placeholder="-"></textarea>
+      </div>
+      <div class="mobile-field">
+        <label for="mobile_almuerzo">Almuerzo</label>
+        <textarea id="mobile_almuerzo" rows="2" placeholder="-"></textarea>
+      </div>
+      <div class="mobile-field">
+        <label for="mobile_colacion2">2ª Colación</label>
+        <textarea id="mobile_colacion2" rows="2" placeholder="-"></textarea>
+      </div>
+      <div class="mobile-field">
+        <label for="mobile_merienda">Merienda</label>
+        <textarea id="mobile_merienda" rows="2" placeholder="-"></textarea>
+      </div>
+      <div class="mobile-field">
+        <label for="mobile_cena">Cena</label>
+        <textarea id="mobile_cena" rows="2" placeholder="-"></textarea>
+      </div>
+    </div>
+    <div class="mobile-only-hint">Para ver la tabla completa o imprimir, abrí esta planilla desde una computadora.</div>
   </div>
 
   <div class="table-shell">
@@ -528,7 +807,6 @@
             <th style="min-width:150px;">2ª Colación</th>
             <th style="min-width:150px;">Merienda</th>
             <th style="min-width:150px;">Cena</th>
-            <th class="no-print" style="min-width:36px;"></th>
           </tr>
         </thead>
         <tbody id="diaryBody"></tbody>
@@ -592,6 +870,22 @@
 
   </section>
 
+  <section id="tab-actividad" class="tab-panel">
+    <div class="calendar-card">
+      <div class="calendar-nav no-print">
+        <button id="calendarPrevMonth" type="button">‹</button>
+        <div class="calendar-title" id="calendarTitle">—</div>
+        <button id="calendarNextMonth" type="button">›</button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <div class="calendar-legend">
+        <span><span class="legend-swatch active"></span> Día con actividad</span>
+        <span><span class="legend-swatch today"></span> Hoy</span>
+        <span>• punto dorado = tiene descripción</span>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <div class="modal-overlay no-print" id="syncModal">
@@ -641,6 +935,29 @@
   </div>
 </div>
 
+<div class="modal-overlay no-print" id="activityModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="activityModalDate">Actividad física</h2>
+      <button class="modal-close" id="activityModalClose" type="button">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="activity-toggle">
+        <input type="checkbox" id="activityActiveCheckbox">
+        <span>Marcar como día con actividad física</span>
+      </label>
+      <div class="field-group full">
+        <label for="activityNoteInput">Descripción (opcional)</label>
+        <textarea id="activityNoteInput" rows="3" placeholder="Ej: Corrí 5km, gimnasio, caminata larga..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="activitySaveBtn" type="button">Guardar</button>
+        <button class="btn-ghost" id="activityDeleteBtn" type="button">Borrar registro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
@@ -655,6 +972,8 @@ const DAY_NAMES = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 
 let entries = {};
 let dates = [];
+let activityLog = {};
+let mobileCurrentDate = null;
 let saveTimeout = null;
 
 // Capa de almacenamiento híbrida:
@@ -743,6 +1062,22 @@ function ensureEarlyDates(){
   }
 }
 
+// Revisa que no falte ningún día entre el primero y el último (por ejemplo, si alguno
+// se borró sin querer alguna vez) y lo completa automáticamente, vacío.
+function ensureNoDateGaps(){
+  if(dates.length < 2) return;
+  const sorted = [...dates].sort();
+  const filled = [];
+  let cursor = parseDateLocal(sorted[0]);
+  const end = parseDateLocal(sorted[sorted.length - 1]);
+  while(cursor <= end){
+    filled.push(fmtDateKey(cursor));
+    cursor = new Date(cursor);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  dates = filled;
+}
+
 async function loadData(){
   try{
     const raw = await storageGet(STORAGE_KEY);
@@ -750,15 +1085,20 @@ async function loadData(){
       const parsed = JSON.parse(raw);
       entries = parsed.entries || {};
       dates = parsed.dates && parsed.dates.length ? parsed.dates : buildInitialDates();
+      activityLog = parsed.activityLog || {};
       ensureEarlyDates();
+      ensureNoDateGaps();
     } else {
       entries = {};
       dates = buildInitialDates();
+      activityLog = {};
     }
   } catch(e){
     entries = {};
     dates = buildInitialDates();
+    activityLog = {};
   }
+  initMobileCurrentDate();
   renderTable();
   setStatus(false);
   scheduleSave();
@@ -772,7 +1112,7 @@ function scheduleSave(){
 
 async function saveData(){
   try{
-    await storageSet(STORAGE_KEY, JSON.stringify({ entries, dates }));
+    await storageSet(STORAGE_KEY, JSON.stringify({ entries, dates, activityLog }));
     setStatus(false);
   } catch(e){
     console.error("Error al guardar:", e);
@@ -791,105 +1131,177 @@ function renderTable(){
   const tbody = document.getElementById("diaryBody");
   tbody.innerHTML = "";
   dates.forEach(dateKey => {
-    const entry = ensureEntry(dateKey);
-    const disp = fmtDisplay(dateKey);
-    const tr = document.createElement("tr");
-    tr.dataset.date = dateKey;
-    if(isToday(dateKey)) tr.classList.add("today");
-
-    const tdDate = document.createElement("td");
-    tdDate.className = "date-cell";
-    tdDate.innerHTML = `<span class="day-name">${disp.dayName}</span>${disp.top}`;
-    tr.appendChild(tdDate);
-
-    const tdPeso = document.createElement("td");
-    tdPeso.className = "peso-cell";
-    const pesoInput = document.createElement("input");
-    pesoInput.type = "text";
-    pesoInput.inputMode = "decimal";
-    pesoInput.placeholder = "—";
-    pesoInput.value = entry.peso || "";
-    pesoInput.addEventListener("input", () => { entry.peso = pesoInput.value; scheduleSave(); });
-    tdPeso.appendChild(pesoInput);
-    tr.appendChild(tdPeso);
-
-    MEAL_FIELDS.forEach(field => {
-      const td = document.createElement("td");
-      td.className = "meal-cell";
-      const ta = document.createElement("textarea");
-      ta.rows = 2;
-      ta.placeholder = "-";
-      ta.value = entry[field] || "";
-      ta.addEventListener("input", () => { entry[field] = ta.value; scheduleSave(); });
-      td.appendChild(ta);
-      tr.appendChild(td);
-    });
-
-    const tdActions = document.createElement("td");
-    tdActions.className = "row-actions no-print";
-    const delBtn = document.createElement("button");
-    delBtn.innerHTML = "✕";
-    delBtn.title = "Eliminar día";
-    delBtn.addEventListener("click", () => {
-      dates = dates.filter(d => d !== dateKey);
-      delete entries[dateKey];
-      renderTable();
-      scheduleSave();
-    });
-    tdActions.appendChild(delBtn);
-    tr.appendChild(tdActions);
-
-    tbody.appendChild(tr);
+    tbody.appendChild(createRowElement(dateKey));
   });
 
   const from = document.getElementById("printFrom");
   const to = document.getElementById("printTo");
   if(!from.value && dates.length) from.value = dates[0];
   if(!to.value && dates.length) to.value = dates[dates.length-1];
+
+  renderMobileDay();
 }
 
-function addRow(){
-  const lastDate = dates.length ? parseDateLocal(dates[dates.length-1]) : parseDateLocal(START_DATE);
-  const next = new Date(lastDate);
-  next.setDate(next.getDate()+1);
-  const key = fmtDateKey(next);
-  if(!dates.includes(key)){
-    dates.push(key);
-    ensureEntry(key);
-    renderTable();
+function createRowElement(dateKey){
+  const entry = ensureEntry(dateKey);
+  const disp = fmtDisplay(dateKey);
+  const tr = document.createElement("tr");
+  tr.dataset.date = dateKey;
+  if(isToday(dateKey)) tr.classList.add("today");
+
+  const tdDate = document.createElement("td");
+  tdDate.className = "date-cell";
+  tdDate.innerHTML = `<span class="day-name">${disp.dayName}</span>${disp.top}`;
+  tr.appendChild(tdDate);
+
+  const tdPeso = document.createElement("td");
+  tdPeso.className = "peso-cell";
+  const pesoInput = document.createElement("input");
+  pesoInput.type = "text";
+  pesoInput.inputMode = "decimal";
+  pesoInput.placeholder = "—";
+  pesoInput.value = entry.peso || "";
+  pesoInput.addEventListener("input", () => {
+    entry.peso = pesoInput.value;
     scheduleSave();
-    document.getElementById("printTo").value = key;
-    const shell = document.querySelector(".scroll-area");
-    shell.scrollTop = shell.scrollHeight;
+    checkAutoExtend(dateKey);
+    if(dateKey === mobileCurrentDate) renderMobileDay();
+  });
+  tdPeso.appendChild(pesoInput);
+  tr.appendChild(tdPeso);
+
+  MEAL_FIELDS.forEach(field => {
+    const td = document.createElement("td");
+    td.className = "meal-cell";
+    const ta = document.createElement("textarea");
+    ta.rows = 2;
+    ta.placeholder = "-";
+    ta.value = entry[field] || "";
+    ta.addEventListener("input", () => {
+      entry[field] = ta.value;
+      scheduleSave();
+      checkAutoExtend(dateKey);
+      if(dateKey === mobileCurrentDate) renderMobileDay();
+    });
+    td.appendChild(ta);
+    tr.appendChild(td);
+  });
+
+  return tr;
+}
+
+// Si se está completando el último día disponible, agrega automáticamente 7 días más.
+function checkAutoExtend(dateKey){
+  if(dates.length && dateKey === dates[dates.length-1]){
+    appendDays(7);
   }
 }
 
-function printRange(){
-  const from = document.getElementById("printFrom").value;
-  const to = document.getElementById("printTo").value;
-  if(!from || !to){ window.print(); return; }
-  const rows = document.querySelectorAll("#diaryBody tr");
-  rows.forEach(tr => {
-    const d = tr.dataset.date;
-    if(d < from || d > to){
-      tr.classList.add("hide-for-print");
-    } else {
-      tr.classList.remove("hide-for-print");
+function appendDays(count){
+  if(!dates.length) return;
+  let cursor = parseDateLocal(dates[dates.length-1]);
+  const tbody = document.getElementById("diaryBody");
+  for(let i=0;i<count;i++){
+    cursor = new Date(cursor);
+    cursor.setDate(cursor.getDate()+1);
+    const key = fmtDateKey(cursor);
+    if(!dates.includes(key)){
+      dates.push(key);
+      ensureEntry(key);
+      tbody.appendChild(createRowElement(key));
     }
-  });
-  window.print();
+  }
+  const to = document.getElementById("printTo");
+  if(to) to.value = dates[dates.length-1];
+  scheduleSave();
 }
 
-window.addEventListener("afterprint", () => {
-  document.querySelectorAll("#diaryBody tr.hide-for-print").forEach(tr => tr.classList.remove("hide-for-print"));
-});
+/* ---------- Vista mobile: un solo día ---------- */
+function initMobileCurrentDate(){
+  const todayKey = fmtDateKey(new Date());
+  mobileCurrentDate = dates.includes(todayKey) ? todayKey : (dates[dates.length-1] || todayKey);
+}
 
-document.getElementById("addRowBtn").addEventListener("click", addRow);
-document.getElementById("printBtn").addEventListener("click", printRange);
+function renderMobileDay(){
+  if(!mobileCurrentDate) return;
+  const entry = ensureEntry(mobileCurrentDate);
+  const disp = fmtDisplay(mobileCurrentDate);
+  const d = parseDateLocal(mobileCurrentDate);
+
+  document.getElementById("mobileDayLabel").innerHTML =
+    `${disp.dayName} ${disp.top}<span class="yr">${d.getFullYear()}</span>`;
+  document.getElementById("mobileDayCard").classList.toggle("today", isToday(mobileCurrentDate));
+
+  document.getElementById("mobilePeso").value = entry.peso || "";
+  MEAL_FIELDS.forEach(field => {
+    document.getElementById("mobile_" + field).value = entry[field] || "";
+  });
+
+  const idx = dates.indexOf(mobileCurrentDate);
+  document.getElementById("mobilePrevDay").disabled = idx <= 0;
+}
+
+function bindMobileInputs(){
+  document.getElementById("mobilePeso").addEventListener("input", (e) => {
+    const entry = ensureEntry(mobileCurrentDate);
+    entry.peso = e.target.value;
+    scheduleSave();
+    checkAutoExtend(mobileCurrentDate);
+  });
+  MEAL_FIELDS.forEach(field => {
+    document.getElementById("mobile_" + field).addEventListener("input", (e) => {
+      const entry = ensureEntry(mobileCurrentDate);
+      entry[field] = e.target.value;
+      scheduleSave();
+      checkAutoExtend(mobileCurrentDate);
+    });
+  });
+
+  document.getElementById("mobilePrevDay").addEventListener("click", () => {
+    const idx = dates.indexOf(mobileCurrentDate);
+    if(idx > 0){
+      mobileCurrentDate = dates[idx-1];
+      renderMobileDay();
+    }
+  });
+
+  document.getElementById("mobileNextDay").addEventListener("click", () => {
+    const idx = dates.indexOf(mobileCurrentDate);
+    if(idx === -1) return;
+    if(idx === dates.length - 1){
+      appendDays(7);
+    }
+    mobileCurrentDate = dates[idx+1];
+    renderMobileDay();
+  });
+}
+bindMobileInputs();
+
+function visualizarPeriodo(){
+  const from = document.getElementById("printFrom").value;
+  const to = document.getElementById("printTo").value;
+  if(!from || !to) return;
+  document.querySelectorAll("#diaryBody tr").forEach(tr => {
+    const d = tr.dataset.date;
+    tr.classList.toggle("row-hidden", d < from || d > to);
+  });
+}
+
+function verTodoElDiario(){
+  document.querySelectorAll("#diaryBody tr.row-hidden").forEach(tr => tr.classList.remove("row-hidden"));
+  if(dates.length){
+    document.getElementById("printFrom").value = dates[0];
+    document.getElementById("printTo").value = dates[dates.length-1];
+  }
+}
+
+document.getElementById("visualizarBtn").addEventListener("click", visualizarPeriodo);
+document.getElementById("verTodoBtn").addEventListener("click", verTodoElDiario);
+document.getElementById("imprimirBtn").addEventListener("click", () => window.print());
 
 /* ---------- Exportar / Importar ---------- */
 document.getElementById("exportBtn").addEventListener("click", () => {
-  const payload = JSON.stringify({ entries, dates }, null, 2);
+  const payload = JSON.stringify({ entries, dates, activityLog }, null, 2);
   const blob = new Blob([payload], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -924,6 +1336,7 @@ document.getElementById("importFile").addEventListener("change", (ev) => {
       if(overwrite){
         entries = parsed.entries;
         dates = parsed.dates;
+        activityLog = parsed.activityLog || {};
       } else {
         parsed.dates.forEach(d => {
           if(!dates.includes(d)) dates.push(d);
@@ -937,12 +1350,22 @@ document.getElementById("importFile").addEventListener("change", (ev) => {
             entries[d] = incoming;
           }
         });
+        if(parsed.activityLog){
+          Object.keys(parsed.activityLog).forEach(d => {
+            if(!activityLog[d]) activityLog[d] = parsed.activityLog[d];
+          });
+        }
       }
+      ensureNoDateGaps();
+      initMobileCurrentDate();
       renderTable();
       scheduleSave();
       setupChartRangeDefaults();
       if(document.getElementById("tab-graficos").classList.contains("active")){
         renderCharts();
+      }
+      if(document.getElementById("tab-actividad").classList.contains("active")){
+        renderCalendar();
       }
       alert("Datos importados correctamente.");
     } catch(err){
@@ -969,7 +1392,20 @@ tabButtons.forEach(btn => {
     if(btn.dataset.tab === "graficos"){
       renderCharts();
     }
+    if(btn.dataset.tab === "actividad"){
+      renderCalendar();
+    }
   });
+});
+
+/* ---------- Menú hamburguesa ---------- */
+const hamburgerMenu = document.getElementById("hamburgerMenu");
+document.getElementById("hamburgerBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  hamburgerMenu.classList.toggle("open");
+});
+document.addEventListener("click", (e) => {
+  if(!hamburgerMenu.contains(e.target)) hamburgerMenu.classList.remove("open");
 });
 
 /* ---------- Gráficos ---------- */
@@ -1278,9 +1714,13 @@ async function connectCloudSync(firebaseConfig, syncCodeRaw, silent){
       const data = snap.data();
       entries = data.entries || {};
       dates = (data.dates && data.dates.length) ? data.dates : dates;
+      activityLog = data.activityLog || {};
+      ensureNoDateGaps();
+      initMobileCurrentDate();
       renderTable();
       setupChartRangeDefaults();
       if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
+      if(document.getElementById("tab-actividad").classList.contains("active")) renderCalendar();
     } else {
       // No existe todavía: este dispositivo "siembra" la nube con lo que ya tiene cargado.
       cloudReady = true;
@@ -1293,9 +1733,13 @@ async function connectCloudSync(firebaseConfig, syncCodeRaw, silent){
       if(data.deviceId === DEVICE_ID) return; // eco de nuestro propio guardado, lo ignoramos
       entries = data.entries || {};
       dates = (data.dates && data.dates.length) ? data.dates : dates;
+      activityLog = data.activityLog || {};
+      ensureNoDateGaps();
+      initMobileCurrentDate();
       renderTable();
       setupChartRangeDefaults();
       if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
+      if(document.getElementById("tab-actividad").classList.contains("active")) renderCalendar();
       setSyncStatus("connected", "Sincronizado — última actualización recibida de otro dispositivo.");
     }, (err) => {
       console.error("Error de sincronización:", err);
@@ -1319,6 +1763,7 @@ async function pushToCloud(){
     await cloudDocRef.set({
       entries,
       dates,
+      activityLog,
       deviceId: DEVICE_ID,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -1379,6 +1824,108 @@ saveData = async function(){
   await originalSaveData();
   if(cloudReady){ pushToCloud(); }
 };
+
+/* ================= Actividad física (calendario) ================= */
+const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const today0 = new Date();
+let calendarYear = today0.getFullYear();
+let calendarMonth = today0.getMonth();
+let activityModalDate = null;
+
+function renderCalendar(){
+  const grid = document.getElementById("calendarGrid");
+  const title = document.getElementById("calendarTitle");
+  title.textContent = MONTH_NAMES[calendarMonth] + " " + calendarYear;
+
+  grid.innerHTML = "";
+  DAY_NAMES.forEach(name => {
+    const wd = document.createElement("div");
+    wd.className = "calendar-weekday";
+    wd.textContent = name;
+    grid.appendChild(wd);
+  });
+
+  const firstOfMonth = new Date(calendarYear, calendarMonth, 1);
+  const startOffset = firstOfMonth.getDay(); // 0=Domingo
+  const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+
+  for(let i=0; i<startOffset; i++){
+    const empty = document.createElement("div");
+    empty.className = "calendar-day empty";
+    grid.appendChild(empty);
+  }
+
+  for(let day=1; day<=daysInMonth; day++){
+    const dateKey = fmtDateKey(new Date(calendarYear, calendarMonth, day));
+    const cell = document.createElement("div");
+    cell.className = "calendar-day";
+    if(isToday(dateKey)) cell.classList.add("today");
+    const log = activityLog[dateKey];
+    if(log && log.active) cell.classList.add("active");
+
+    const num = document.createElement("div");
+    num.textContent = day;
+    cell.appendChild(num);
+
+    if(log && log.note && log.note.trim()){
+      const dot = document.createElement("div");
+      dot.className = "note-dot";
+      cell.appendChild(dot);
+    }
+
+    cell.addEventListener("click", () => openActivityModal(dateKey));
+    grid.appendChild(cell);
+  }
+}
+
+function formatLongDate(dateKey){
+  const d = parseDateLocal(dateKey);
+  return DAY_NAMES[d.getDay()] + " " + d.getDate() + " de " + MONTH_NAMES[d.getMonth()] + " de " + d.getFullYear();
+}
+
+function openActivityModal(dateKey){
+  activityModalDate = dateKey;
+  const log = activityLog[dateKey] || { active: false, note: "" };
+  document.getElementById("activityModalDate").textContent = "Actividad física — " + formatLongDate(dateKey);
+  document.getElementById("activityActiveCheckbox").checked = !!log.active;
+  document.getElementById("activityNoteInput").value = log.note || "";
+  document.getElementById("activityModal").classList.add("open");
+}
+
+document.getElementById("calendarPrevMonth").addEventListener("click", () => {
+  calendarMonth--;
+  if(calendarMonth < 0){ calendarMonth = 11; calendarYear--; }
+  renderCalendar();
+});
+document.getElementById("calendarNextMonth").addEventListener("click", () => {
+  calendarMonth++;
+  if(calendarMonth > 11){ calendarMonth = 0; calendarYear++; }
+  renderCalendar();
+});
+
+const activityModal = document.getElementById("activityModal");
+document.getElementById("activityModalClose").addEventListener("click", () => activityModal.classList.remove("open"));
+activityModal.addEventListener("click", (e) => { if(e.target === activityModal) activityModal.classList.remove("open"); });
+
+document.getElementById("activitySaveBtn").addEventListener("click", () => {
+  const active = document.getElementById("activityActiveCheckbox").checked;
+  const note = document.getElementById("activityNoteInput").value;
+  if(active || note.trim()){
+    activityLog[activityModalDate] = { active, note };
+  } else {
+    delete activityLog[activityModalDate];
+  }
+  activityModal.classList.remove("open");
+  scheduleSave();
+  renderCalendar();
+});
+
+document.getElementById("activityDeleteBtn").addEventListener("click", () => {
+  delete activityLog[activityModalDate];
+  activityModal.classList.remove("open");
+  scheduleSave();
+  renderCalendar();
+});
 
 // Registro del service worker (permite que la app funcione offline una vez instalada)
 if("serviceWorker" in navigator){
