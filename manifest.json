@@ -1,13 +1,13 @@
 {
-  "name": "Diario de Alimentación",
-  "short_name": "Diario",
-  "description": "Registro diario de peso y comidas, con evolución de peso.",
+  "name": "Foco",
+  "short_name": "Foco",
+  "description": "Tu registro diario de peso, comidas y actividad física.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#F7F5EE",
-  "theme_color": "#2F4739",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1E6B4C",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
