@@ -529,7 +529,7 @@
     font-size: 0.72rem; text-transform: uppercase; letter-spacing:0.05em; color: var(--ink-soft);
     display:block; margin-bottom: 5px; font-weight:500;
   }
-  .field-group.full textarea, .field-group.full input[type=text]{
+  .field-group.full textarea, .field-group.full input[type=text], .field-group.full input[type=email], .field-group.full input[type=password]{
     width:100%;
     font-family: 'Nunito', sans-serif;
     font-size: 0.78rem;
@@ -540,7 +540,7 @@
     color: var(--ink);
     resize: vertical;
   }
-  .field-group.full input[type=text]{ font-family:'Nunito',sans-serif; font-size:0.85rem; }
+  .field-group.full input[type=text], .field-group.full input[type=email], .field-group.full input[type=password]{ font-family:'Nunito',sans-serif; font-size:0.85rem; }
   .modal-actions{ display:flex; gap:10px; margin-top: 6px; }
   .sync-status-box{
     display:flex; align-items:center; gap:8px;
@@ -558,6 +558,45 @@
   .sync-status-box.connected .dot{ background: var(--forest); }
   .sync-status-box.connected{ color: var(--ink); }
   .sync-status-box.error .dot{ background: #C0463A; }
+
+  /* Pantalla de acceso (login/registro) — tapa la app hasta autenticarse */
+  #appRoot{ display:none; }
+  #appRoot.app-visible{ display:block; }
+  .auth-gate{
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: var(--paper);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+  .auth-gate.hidden{ display:none; }
+  .auth-card{
+    background: var(--white);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    max-width: 400px;
+    width:100%;
+    padding: 32px 28px;
+  }
+  .auth-card-logo{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .auth-card-logo .logo-text{ font-size: 1.5rem; }
+  .auth-card-sub{
+    text-align:center;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+  .auth-forgot{ text-align:center; margin-top: 4px; }
 
   /* Menú hamburguesa (se abre con hover o click) */
   .hamburger-menu{
@@ -888,7 +927,40 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <div class="auth-card-logo">
+      <svg width="26" height="26" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M35 6C40 18 52 22 64 26C52 30 40 34 35 46C30 34 18 30 6 26C18 22 30 18 35 6Z" fill="#E67E22"/>
+      </svg>
+      <span class="logo-text">Foco</span>
+    </div>
+    <div class="auth-card-sub">Tu registro diario de peso, comidas y actividad física.</div>
+
+    <div id="accountStatusBox" class="sync-status-box">
+      <span class="dot"></span> <span id="accountStatusText">Verificando sesión…</span>
+    </div>
+
+    <div class="field-group full">
+      <label for="accountEmailInput">Email</label>
+      <input type="email" id="accountEmailInput" placeholder="tu@email.com" autocomplete="username">
+    </div>
+    <div class="field-group full">
+      <label for="accountPasswordInput">Contraseña</label>
+      <input type="password" id="accountPasswordInput" placeholder="mínimo 6 caracteres" autocomplete="current-password">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="accountLoginBtn" type="button">Iniciar sesión</button>
+      <button class="btn-ghost" id="accountSignupBtn" type="button">Crear cuenta</button>
+    </div>
+    <div class="auth-forgot">
+      <button class="link-btn" id="accountForgotBtn" type="button">¿Olvidaste tu contraseña?</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="appRoot">
 
   <div class="header-decor no-print" aria-hidden="true">
     <svg width="120" height="90" viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -940,7 +1012,7 @@
     <div class="hamburger-panel">
       <button id="exportBtn" type="button">⬇ Exportar datos</button>
       <button id="importBtn" type="button">⬆ Importar datos</button>
-      <button id="syncBtn" type="button">🔄 Sincronización</button>
+      <button id="accountLogoutBtn" type="button">🚪 Cerrar sesión</button>
     </div>
     <input type="file" id="importFile" accept="application/json" style="display:none;">
   </div>
@@ -1135,80 +1207,6 @@
 
 </div>
 
-<div class="modal-overlay no-print" id="syncModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2>🔄 Sincronización entre dispositivos</h2>
-      <button class="modal-close" id="syncModalClose" type="button">✕</button>
-    </div>
-
-    <div class="modal-body">
-      <p class="modal-text">
-        Conectá esta app a tu base de datos gratuita de Firebase. Con una cuenta, tus datos quedan
-        privados y aislados de los de cualquier otra persona que use este mismo sitio.
-      </p>
-
-      <div class="field-group full">
-        <label for="syncConfigInput">Configuración de Firebase (pegá el objeto "firebaseConfig" tal como te lo da la consola — se usa una sola vez para conectar el proyecto)</label>
-        <textarea id="syncConfigInput" rows="6" placeholder='{
-  apiKey: "AIza...",
-  authDomain: "tu-proyecto.firebaseapp.com",
-  projectId: "tu-proyecto",
-  storageBucket: "tu-proyecto.appspot.com",
-  messagingSenderId: "...",
-  appId: "..."
-}'></textarea>
-      </div>
-
-      <div class="sync-section">
-        <div class="sync-section-title">👤 Con cuenta (recomendado)</div>
-        <div id="accountStatusBox" class="sync-status-box">
-          <span class="dot"></span> <span id="accountStatusText">No iniciaste sesión.</span>
-        </div>
-        <div id="accountLoginFields">
-          <div class="field-group full">
-            <label for="accountEmailInput">Email</label>
-            <input type="text" id="accountEmailInput" placeholder="tu@email.com" autocomplete="username">
-          </div>
-          <div class="field-group full">
-            <label for="accountPasswordInput">Contraseña</label>
-            <input type="password" id="accountPasswordInput" placeholder="mínimo 6 caracteres" autocomplete="current-password">
-          </div>
-          <div class="modal-actions">
-            <button class="btn-primary" id="accountLoginBtn" type="button">Iniciar sesión</button>
-            <button class="btn-ghost" id="accountSignupBtn" type="button">Crear cuenta</button>
-          </div>
-          <button class="link-btn" id="accountForgotBtn" type="button">¿Olvidaste tu contraseña?</button>
-        </div>
-        <button class="btn-ghost" id="accountLogoutBtn" type="button" style="display:none;">Cerrar sesión</button>
-      </div>
-
-      <div class="sync-divider">o, sin cuenta</div>
-
-      <div class="sync-section">
-        <div class="sync-section-title">🔑 Código simple (heredado)</div>
-        <div id="syncStatusBox" class="sync-status-box">
-          <span class="dot"></span> <span id="syncStatusText">Sin conectar.</span>
-        </div>
-        <div class="field-group full">
-          <label for="syncCodeInput">Código de sincronización (cualquiera que lo conozca puede leer y escribir estos datos)</label>
-          <input type="text" id="syncCodeInput" placeholder="ej: hernan-diario-2026">
-        </div>
-        <div class="modal-actions">
-          <button class="btn-ghost" id="syncConnectBtn" type="button">Conectar con código</button>
-          <button class="btn-ghost" id="syncDisconnectBtn" type="button">Desconectar</button>
-        </div>
-      </div>
-
-      <p class="modal-hint">
-        Con cuenta: la primera vez que iniciás sesión en un dispositivo con datos ya cargados, esos datos
-        quedan asociados a tu cuenta automáticamente. En cualquier otro dispositivo, iniciá sesión con el
-        mismo email y contraseña para ver todo sincronizado.
-      </p>
-    </div>
-  </div>
-</div>
-
 <div class="modal-overlay no-print" id="activityModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -1250,6 +1248,19 @@ let activityLog = {};
 let mobileCurrentDate = null;
 let saveTimeout = null;
 let authUser = null; // usuario de Firebase Auth con sesión iniciada (modo multitenant con cuenta)
+
+// Config del proyecto Firebase compartido por todos los usuarios de esta app.
+// Cada usuario se autentica con su propio email/contraseña y sus datos quedan
+// aislados en Firestore (colección "diarios_users", clave = su uid).
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyC3bBKBIcWmfHvzhhK5vWd6h6tAs7Us3EQ",
+  authDomain: "diario-alimentacion.firebaseapp.com",
+  projectId: "diario-alimentacion",
+  storageBucket: "diario-alimentacion.firebasestorage.app",
+  messagingSenderId: "9192786280",
+  appId: "1:9192786280:web:13c93a2985ddcad3156edd",
+  measurementId: "G-WTJVBRXEPV"
+};
 
 // Capa de almacenamiento híbrida:
 // - Si el archivo se abre dentro del panel de artefactos de Claude, usa window.storage (persiste en tu cuenta).
@@ -2045,20 +2056,7 @@ function renderWeightChart(rangeDates){
   });
 }
 
-loadData().then(() => {
-  setupChartRangeDefaults();
-  initCloudSync();
-});
-
-/* ================= Sincronización con Firebase (Firestore) ================= */
-const SYNC_CONFIG_KEY = "diario-sync-config";
 const DEVICE_ID_KEY = "diario-device-id";
-
-let cloudApp = null;
-let cloudDb = null;
-let cloudDocRef = null;
-let cloudUnsubscribe = null;
-let cloudReady = false;
 
 function getDeviceId(){
   let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -2070,55 +2068,10 @@ function getDeviceId(){
 }
 const DEVICE_ID = getDeviceId();
 
-function getSyncConfig(){
-  try{
-    const raw = localStorage.getItem(SYNC_CONFIG_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch(e){ return null; }
-}
-
-function saveSyncConfig(cfg){
-  localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(cfg));
-}
-
-function clearSyncConfig(){
-  localStorage.removeItem(SYNC_CONFIG_KEY);
-}
-
-function sanitizeSyncCode(code){
-  return String(code).trim().toLowerCase().replace(/[^a-z0-9\-_]+/g, "-").slice(0, 120) || "default";
-}
-
-// Parser tolerante: acepta tanto JSON válido como el objeto literal tal cual lo
-// muestra la consola de Firebase (claves sin comillas).
-function parseFirebaseConfig(text){
-  const trimmed = text.trim();
-  try{
-    return JSON.parse(trimmed);
-  } catch(e){
-    try{
-      return Function('"use strict"; return (' + trimmed + ");")();
-    } catch(e2){
-      throw new Error("No se pudo interpretar la configuración pegada.");
-    }
-  }
-}
-
-function setSyncStatus(state, message){
-  const box = document.getElementById("syncStatusBox");
-  const text = document.getElementById("syncStatusText");
-  box.classList.remove("connected", "error");
-  if(state === "connected") box.classList.add("connected");
-  if(state === "error") box.classList.add("error");
-  text.textContent = message;
-}
-
 function updateStorageLegendForSync(){
   const legend = document.getElementById("storageLegend");
   if(authUser){
     legend.textContent = "Conectado como " + authUser.email + " — tus datos son privados y se sincronizan solo entre tus dispositivos.";
-  } else if(cloudReady){
-    legend.textContent = "Sincronización en la nube activa (código compartido) — cualquiera con el código puede acceder a estos datos.";
   } else {
     legend.textContent = hasCloudStorage
       ? "Los datos se guardan automáticamente en tu cuenta de Claude."
@@ -2126,169 +2079,25 @@ function updateStorageLegendForSync(){
   }
 }
 
-async function initCloudSync(){
-  const cfg = getSyncConfig();
-  if(!cfg || !cfg.firebaseConfig || !cfg.syncCode) return;
-  await connectCloudSync(cfg.firebaseConfig, cfg.syncCode, true);
-}
-
-async function connectCloudSync(firebaseConfig, syncCodeRaw, silent){
-  const syncCode = sanitizeSyncCode(syncCodeRaw);
-  try{
-    if(!silent) setSyncStatus("idle", "Conectando...");
-
-    if(cloudUnsubscribe){ cloudUnsubscribe(); cloudUnsubscribe = null; }
-    if(cloudApp){ try{ await cloudApp.delete(); } catch(e){} cloudApp = null; }
-
-    cloudApp = firebase.initializeApp(firebaseConfig, "diarioApp_" + Date.now());
-    await cloudApp.auth().signInAnonymously();
-    cloudDb = cloudApp.firestore();
-    cloudDocRef = cloudDb.collection("diarios").doc(syncCode);
-
-    const snap = await cloudDocRef.get();
-    if(snap.exists){
-      // Ya hay datos en la nube con este código: los tomamos como fuente de verdad.
-      const data = snap.data();
-      entries = data.entries || {};
-      dates = (data.dates && data.dates.length) ? data.dates : dates;
-      activityLog = data.activityLog || {};
-      ensureNoDateGaps();
-      initMobileCurrentDate();
-      renderTable();
-      setupChartRangeDefaults();
-      if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
-      if(document.getElementById("tab-actividad").classList.contains("active")) renderCalendar();
-    } else {
-      // No existe todavía: este dispositivo "siembra" la nube con lo que ya tiene cargado.
-      cloudReady = true;
-      await pushToCloud();
-    }
-
-    cloudUnsubscribe = cloudDocRef.onSnapshot((doc) => {
-      if(!doc.exists) return;
-      const data = doc.data();
-      if(data.deviceId === DEVICE_ID) return; // eco de nuestro propio guardado, lo ignoramos
-      entries = data.entries || {};
-      dates = (data.dates && data.dates.length) ? data.dates : dates;
-      activityLog = data.activityLog || {};
-      ensureNoDateGaps();
-      initMobileCurrentDate();
-      renderTable();
-      setupChartRangeDefaults();
-      if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
-      if(document.getElementById("tab-actividad").classList.contains("active")) renderCalendar();
-      setSyncStatus("connected", "Sincronizado — última actualización recibida de otro dispositivo.");
-    }, (err) => {
-      console.error("Error de sincronización:", err);
-      setSyncStatus("error", "Se perdió la conexión con la sincronización: " + err.message);
-    });
-
-    cloudReady = true;
-    saveSyncConfig({ firebaseConfig, syncCode: syncCodeRaw });
-    updateStorageLegendForSync();
-    setSyncStatus("connected", "Conectado. Código de sincronización: " + syncCode);
-  } catch(err){
-    console.error("Error al conectar la sincronización:", err);
-    cloudReady = false;
-    setSyncStatus("error", "No se pudo conectar: " + err.message);
-  }
-}
-
-async function pushToCloud(){
-  if(!cloudDocRef) return;
-  try{
-    await cloudDocRef.set({
-      entries,
-      dates,
-      activityLog,
-      deviceId: DEVICE_ID,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch(err){
-    console.error("No se pudo enviar a la nube:", err);
-    setSyncStatus("error", "No se pudieron enviar los últimos cambios: " + err.message);
-  }
-}
-
-function disconnectCloudSync(){
-  if(cloudUnsubscribe){ cloudUnsubscribe(); cloudUnsubscribe = null; }
-  if(cloudApp){ cloudApp.delete().catch(() => {}); cloudApp = null; }
-  cloudDb = null;
-  cloudDocRef = null;
-  cloudReady = false;
-  clearSyncConfig();
-  updateStorageLegendForSync();
-  setSyncStatus("idle", "Sin conectar — los datos se guardan solo en este dispositivo.");
-}
-
-// Modal de sincronización
-const syncModal = document.getElementById("syncModal");
-document.getElementById("syncBtn").addEventListener("click", () => {
-  const cfg = getSyncConfig();
-  const acctCfg = getAccountConfig();
-  if(cfg){
-    document.getElementById("syncConfigInput").value = JSON.stringify(cfg.firebaseConfig, null, 2);
-    document.getElementById("syncCodeInput").value = cfg.syncCode;
-  } else if(acctCfg){
-    document.getElementById("syncConfigInput").value = JSON.stringify(acctCfg.firebaseConfig, null, 2);
-  }
-  if(authUser){
-    document.getElementById("accountEmailInput").value = authUser.email;
-  }
-  syncModal.classList.add("open");
-});
-document.getElementById("syncModalClose").addEventListener("click", () => syncModal.classList.remove("open"));
-syncModal.addEventListener("click", (e) => { if(e.target === syncModal) syncModal.classList.remove("open"); });
-
-document.getElementById("syncConnectBtn").addEventListener("click", async () => {
-  const rawConfig = document.getElementById("syncConfigInput").value;
-  const syncCode = document.getElementById("syncCodeInput").value;
-  if(!rawConfig.trim() || !syncCode.trim()){
-    setSyncStatus("error", "Completá la configuración de Firebase y un código de sincronización.");
-    return;
-  }
-  let firebaseConfig;
-  try{
-    firebaseConfig = parseFirebaseConfig(rawConfig);
-  } catch(err){
-    setSyncStatus("error", err.message);
-    return;
-  }
-  await connectCloudSync(firebaseConfig, syncCode, false);
-});
-
-document.getElementById("syncDisconnectBtn").addEventListener("click", () => {
-  disconnectCloudSync();
-});
-
-// Hook: cada vez que se guarda localmente, si hay sincronización activa, también se envía a la nube.
+// Hook: cada vez que se guarda localmente, si hay sesión iniciada, también se envía a la nube.
 const originalSaveData = saveData;
 saveData = async function(){
   await originalSaveData();
-  if(cloudReady){ pushToCloud(); }
   if(userCloudReady){ pushToUserCloud(); }
 };
 
 /* ================= Cuenta multitenant (Firebase Authentication) =================
-   Cada usuario que inicia sesión con su email/contraseña obtiene su propio documento
+   Cada usuario se registra o inicia sesión con su email/contraseña en la pantalla de
+   acceso (#authGate) antes de poder ver la app. Cada cuenta obtiene su propio documento
    en Firestore (colección "diarios_users", clave = su uid), totalmente aislado del de
-   cualquier otra persona que use este mismo sitio. No reemplaza el modo "código simple"
-   existente (que sigue funcionando igual que antes); es una alternativa más segura. */
-const ACCOUNT_CONFIG_KEY = "diario-account-config";
-
+   cualquier otra persona que use este mismo sitio. */
 let authApp = null;
 let userDocRef = null;
 let userUnsubscribe = null;
 let userCloudReady = false;
-let pendingGuestSeed = null;
 
-function getAccountConfig(){
-  try{
-    const raw = localStorage.getItem(ACCOUNT_CONFIG_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch(e){ return null; }
-}
-function saveAccountConfig(cfg){ localStorage.setItem(ACCOUNT_CONFIG_KEY, JSON.stringify(cfg)); }
+const authGateEl = document.getElementById("authGate");
+const appRootEl = document.getElementById("appRoot");
 
 function setAccountStatus(state, message){
   const box = document.getElementById("accountStatusBox");
@@ -2324,27 +2133,20 @@ async function initAccountAuth(firebaseConfig){
     if(user){
       authUser = user;
       setAccountStatus("connected", "Conectado como " + user.email);
-      document.getElementById("accountLoginFields").style.display = "none";
-      document.getElementById("accountLogoutBtn").style.display = "";
+      authGateEl.classList.add("hidden");
+      appRootEl.classList.add("app-visible");
       await attachUserDoc();
       updateStorageLegendForSync();
     } else {
       if(userUnsubscribe){ userUnsubscribe(); userUnsubscribe = null; }
       authUser = null;
+      userDocRef = null;
       userCloudReady = false;
-      setAccountStatus("idle", "No iniciaste sesión.");
-      document.getElementById("accountLoginFields").style.display = "";
-      document.getElementById("accountLogoutBtn").style.display = "none";
-      updateStorageLegendForSync();
+      setAccountStatus("idle", "Iniciá sesión o creá una cuenta para continuar.");
+      authGateEl.classList.remove("hidden");
+      appRootEl.classList.remove("app-visible");
     }
   });
-}
-
-async function initAccountAuthFromSavedConfig(){
-  const cfg = getAccountConfig();
-  if(cfg && cfg.firebaseConfig){
-    await initAccountAuth(cfg.firebaseConfig);
-  }
 }
 
 async function attachUserDoc(){
@@ -2361,13 +2163,7 @@ async function attachUserDoc(){
     entries = data.entries || {};
     dates = (data.dates && data.dates.length) ? data.dates : dates;
     activityLog = data.activityLog || {};
-  } else if(pendingGuestSeed){
-    // Cuenta nueva: la sembramos con los datos que ya tenías cargados antes de iniciar sesión.
-    entries = pendingGuestSeed.entries;
-    dates = pendingGuestSeed.dates;
-    activityLog = pendingGuestSeed.activityLog;
   }
-  pendingGuestSeed = null;
 
   initMobileCurrentDate();
   renderTable();
@@ -2410,50 +2206,26 @@ async function pushToUserCloud(){
   }
 }
 
-function captureGuestSeed(){
-  pendingGuestSeed = {
-    entries: JSON.parse(JSON.stringify(entries)),
-    dates: [...dates],
-    activityLog: JSON.parse(JSON.stringify(activityLog))
-  };
-}
-
 document.getElementById("accountLoginBtn").addEventListener("click", async () => {
-  const rawConfig = document.getElementById("syncConfigInput").value;
   const email = document.getElementById("accountEmailInput").value.trim();
   const password = document.getElementById("accountPasswordInput").value;
-  if(!rawConfig.trim()){ setAccountStatus("error", "Pegá primero la configuración de Firebase."); return; }
   if(!email || !password){ setAccountStatus("error", "Completá email y contraseña."); return; }
-  let firebaseConfig;
-  try{ firebaseConfig = parseFirebaseConfig(rawConfig); } catch(err){ setAccountStatus("error", err.message); return; }
-  saveAccountConfig({ firebaseConfig });
-  await initAccountAuth(firebaseConfig);
-  captureGuestSeed();
   setAccountStatus("idle", "Iniciando sesión...");
   try{
     await authApp.auth().signInWithEmailAndPassword(email, password);
   } catch(err){
-    pendingGuestSeed = null;
     setAccountStatus("error", translateAuthError(err));
   }
 });
 
 document.getElementById("accountSignupBtn").addEventListener("click", async () => {
-  const rawConfig = document.getElementById("syncConfigInput").value;
   const email = document.getElementById("accountEmailInput").value.trim();
   const password = document.getElementById("accountPasswordInput").value;
-  if(!rawConfig.trim()){ setAccountStatus("error", "Pegá primero la configuración de Firebase."); return; }
   if(!email || !password){ setAccountStatus("error", "Completá email y contraseña."); return; }
-  let firebaseConfig;
-  try{ firebaseConfig = parseFirebaseConfig(rawConfig); } catch(err){ setAccountStatus("error", err.message); return; }
-  saveAccountConfig({ firebaseConfig });
-  await initAccountAuth(firebaseConfig);
-  captureGuestSeed();
   setAccountStatus("idle", "Creando cuenta...");
   try{
     await authApp.auth().createUserWithEmailAndPassword(email, password);
   } catch(err){
-    pendingGuestSeed = null;
     setAccountStatus("error", translateAuthError(err));
   }
 });
@@ -2461,18 +2233,12 @@ document.getElementById("accountSignupBtn").addEventListener("click", async () =
 document.getElementById("accountLogoutBtn").addEventListener("click", async () => {
   if(authApp){
     await authApp.auth().signOut();
-    // Volvemos al modo local (sin cuenta): recargamos lo que corresponda a ese modo.
-    await loadData();
   }
 });
 
 document.getElementById("accountForgotBtn").addEventListener("click", async () => {
-  const rawConfig = document.getElementById("syncConfigInput").value;
   const email = document.getElementById("accountEmailInput").value.trim();
   if(!email){ setAccountStatus("error", "Escribí tu email arriba primero."); return; }
-  let firebaseConfig;
-  try{ firebaseConfig = parseFirebaseConfig(rawConfig); } catch(err){ setAccountStatus("error", err.message); return; }
-  await initAccountAuth(firebaseConfig);
   try{
     await authApp.auth().sendPasswordResetEmail(email);
     setAccountStatus("connected", "Te enviamos un email para recuperar tu contraseña.");
@@ -2481,7 +2247,7 @@ document.getElementById("accountForgotBtn").addEventListener("click", async () =
   }
 });
 
-initAccountAuthFromSavedConfig();
+initAccountAuth(FIREBASE_CONFIG);
 
 /* ================= Actividad física (calendario) ================= */
 const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
