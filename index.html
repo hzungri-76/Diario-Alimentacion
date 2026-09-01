@@ -444,6 +444,53 @@
   .goal-progress-desc{ font-size:0.84rem; color: var(--ink-soft); line-height:1.5; }
   .goal-progress-desc b{ color: var(--ink); }
 
+  .color-swatch-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .color-swatch{
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    display:flex; align-items:center; justify-content:center;
+    transition: transform 0.1s ease;
+  }
+  .color-swatch:hover{ transform: scale(1.1); }
+  .color-swatch.selected{ border-color: var(--ink); }
+  .color-swatch.selected::after{
+    content:"✓"; color:#fff; font-size:0.9rem; font-weight:800;
+  }
+
+  .goals-list{
+    display:flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .goal-row{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: var(--paper);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .goal-row:hover{ border-color: var(--gold); }
+  .goal-row .goal-dot{
+    width: 12px; height:12px; border-radius:50%; flex-shrink:0;
+  }
+  .goal-row .goal-label{
+    font-weight:600; font-size:0.86rem; color: var(--ink);
+  }
+  .goal-row .goal-weight{
+    font-family:'Nunito', sans-serif; font-weight:700; color: var(--ink-soft); font-size:0.82rem; margin-left:auto;
+  }
+  .goals-empty{
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+
   /* Sync modal */
   .modal-overlay{
     display:none;
@@ -529,7 +576,7 @@
     font-size: 0.72rem; text-transform: uppercase; letter-spacing:0.05em; color: var(--ink-soft);
     display:block; margin-bottom: 5px; font-weight:500;
   }
-  .field-group.full textarea, .field-group.full input[type=text], .field-group.full input[type=email], .field-group.full input[type=password]{
+  .field-group.full textarea, .field-group.full input[type=text]{
     width:100%;
     font-family: 'Nunito', sans-serif;
     font-size: 0.78rem;
@@ -540,7 +587,7 @@
     color: var(--ink);
     resize: vertical;
   }
-  .field-group.full input[type=text], .field-group.full input[type=email], .field-group.full input[type=password]{ font-family:'Nunito',sans-serif; font-size:0.85rem; }
+  .field-group.full input[type=text]{ font-family:'Nunito',sans-serif; font-size:0.85rem; }
   .modal-actions{ display:flex; gap:10px; margin-top: 6px; }
   .sync-status-box{
     display:flex; align-items:center; gap:8px;
@@ -558,45 +605,6 @@
   .sync-status-box.connected .dot{ background: var(--forest); }
   .sync-status-box.connected{ color: var(--ink); }
   .sync-status-box.error .dot{ background: #C0463A; }
-
-  /* Pantalla de acceso (login/registro) — tapa la app hasta autenticarse */
-  #appRoot{ display:none; }
-  #appRoot.app-visible{ display:block; }
-  .auth-gate{
-    position: fixed;
-    inset: 0;
-    z-index: 500;
-    background: var(--paper);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding: 24px;
-  }
-  .auth-gate.hidden{ display:none; }
-  .auth-card{
-    background: var(--white);
-    border: 1px solid var(--paper-line);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    max-width: 400px;
-    width:100%;
-    padding: 32px 28px;
-  }
-  .auth-card-logo{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap: 10px;
-    margin-bottom: 6px;
-  }
-  .auth-card-logo .logo-text{ font-size: 1.5rem; }
-  .auth-card-sub{
-    text-align:center;
-    font-size: 0.82rem;
-    color: var(--ink-soft);
-    margin-bottom: 24px;
-  }
-  .auth-forgot{ text-align:center; margin-top: 4px; }
 
   /* Menú hamburguesa (se abre con hover o click) */
   .hamburger-menu{
@@ -927,40 +935,7 @@
 </style>
 </head>
 <body>
-
-<div class="auth-gate" id="authGate">
-  <div class="auth-card">
-    <div class="auth-card-logo">
-      <svg width="26" height="26" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M35 6C40 18 52 22 64 26C52 30 40 34 35 46C30 34 18 30 6 26C18 22 30 18 35 6Z" fill="#E67E22"/>
-      </svg>
-      <span class="logo-text">Foco</span>
-    </div>
-    <div class="auth-card-sub">Tu registro diario de peso, comidas y actividad física.</div>
-
-    <div id="accountStatusBox" class="sync-status-box">
-      <span class="dot"></span> <span id="accountStatusText">Verificando sesión…</span>
-    </div>
-
-    <div class="field-group full">
-      <label for="accountEmailInput">Email</label>
-      <input type="email" id="accountEmailInput" placeholder="tu@email.com" autocomplete="username">
-    </div>
-    <div class="field-group full">
-      <label for="accountPasswordInput">Contraseña</label>
-      <input type="password" id="accountPasswordInput" placeholder="mínimo 6 caracteres" autocomplete="current-password">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-primary" id="accountLoginBtn" type="button">Iniciar sesión</button>
-      <button class="btn-ghost" id="accountSignupBtn" type="button">Crear cuenta</button>
-    </div>
-    <div class="auth-forgot">
-      <button class="link-btn" id="accountForgotBtn" type="button">¿Olvidaste tu contraseña?</button>
-    </div>
-  </div>
-</div>
-
-<div class="wrap" id="appRoot">
+<div class="wrap">
 
   <div class="header-decor no-print" aria-hidden="true">
     <svg width="120" height="90" viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1010,9 +985,10 @@
   <div class="hamburger-menu no-print" id="hamburgerMenu">
     <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menú">☰</button>
     <div class="hamburger-panel">
+      <button id="profileBtn" type="button">👤 Mi perfil</button>
       <button id="exportBtn" type="button">⬇ Exportar datos</button>
       <button id="importBtn" type="button">⬆ Importar datos</button>
-      <button id="accountLogoutBtn" type="button">🚪 Cerrar sesión</button>
+      <button id="syncBtn" type="button">🔄 Sincronización</button>
     </div>
     <input type="file" id="importFile" accept="application/json" style="display:none;">
   </div>
@@ -1137,6 +1113,13 @@
       <button class="btn-ghost" id="resetChartRange">Período por defecto</button>
     </div>
 
+    <div class="chart-card">
+      <h3>🎯 Tus metas de peso</h3>
+      <div class="goals-list" id="goalsList"></div>
+      <div class="goals-empty" id="goalsEmpty" style="display:none;">Todavía no cargaste ninguna meta.</div>
+      <button class="btn-ghost" id="addGoalBtn" type="button">+ Agregar meta</button>
+    </div>
+
     <div class="chart-card goal-progress-card">
       <div class="score-ring" id="goalProgressRing" style="width:96px;height:96px;">
         <svg width="96" height="96" viewBox="0 0 96 96">
@@ -1149,7 +1132,7 @@
         </div>
       </div>
       <div class="goal-progress-text">
-        <div class="goal-progress-title">Progreso hacia la meta</div>
+        <div class="goal-progress-title" id="goalProgressTitle">Progreso hacia la meta</div>
         <div class="goal-progress-desc" id="goalProgressDesc">Cargá tu peso para ver tu progreso.</div>
       </div>
     </div>
@@ -1168,7 +1151,7 @@
         <div class="stat-value" id="statDescenso">—</div>
       </div>
       <div class="stat-box highlight">
-        <div class="stat-label">Falta para la meta (95 kg)</div>
+        <div class="stat-label" id="statFaltaMetaLabel">Falta para la meta</div>
         <div class="stat-value" id="statFaltaMeta">—</div>
       </div>
       <div class="stat-box">
@@ -1207,6 +1190,80 @@
 
 </div>
 
+<div class="modal-overlay no-print" id="syncModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🔄 Sincronización entre dispositivos</h2>
+      <button class="modal-close" id="syncModalClose" type="button">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-text">
+        Conectá esta app a tu base de datos gratuita de Firebase. Con una cuenta, tus datos quedan
+        privados y aislados de los de cualquier otra persona que use este mismo sitio.
+      </p>
+
+      <div class="field-group full">
+        <label for="syncConfigInput">Configuración de Firebase (pegá el objeto "firebaseConfig" tal como te lo da la consola — se usa una sola vez para conectar el proyecto)</label>
+        <textarea id="syncConfigInput" rows="6" placeholder='{
+  apiKey: "AIza...",
+  authDomain: "tu-proyecto.firebaseapp.com",
+  projectId: "tu-proyecto",
+  storageBucket: "tu-proyecto.appspot.com",
+  messagingSenderId: "...",
+  appId: "..."
+}'></textarea>
+      </div>
+
+      <div class="sync-section">
+        <div class="sync-section-title">👤 Con cuenta (recomendado)</div>
+        <div id="accountStatusBox" class="sync-status-box">
+          <span class="dot"></span> <span id="accountStatusText">No iniciaste sesión.</span>
+        </div>
+        <div id="accountLoginFields">
+          <div class="field-group full">
+            <label for="accountEmailInput">Email</label>
+            <input type="text" id="accountEmailInput" placeholder="tu@email.com" autocomplete="username">
+          </div>
+          <div class="field-group full">
+            <label for="accountPasswordInput">Contraseña</label>
+            <input type="password" id="accountPasswordInput" placeholder="mínimo 6 caracteres" autocomplete="current-password">
+          </div>
+          <div class="modal-actions">
+            <button class="btn-primary" id="accountLoginBtn" type="button">Iniciar sesión</button>
+            <button class="btn-ghost" id="accountSignupBtn" type="button">Crear cuenta</button>
+          </div>
+          <button class="link-btn" id="accountForgotBtn" type="button">¿Olvidaste tu contraseña?</button>
+        </div>
+        <button class="btn-ghost" id="accountLogoutBtn" type="button" style="display:none;">Cerrar sesión</button>
+      </div>
+
+      <div class="sync-divider">o, sin cuenta</div>
+
+      <div class="sync-section">
+        <div class="sync-section-title">🔑 Código simple (heredado)</div>
+        <div id="syncStatusBox" class="sync-status-box">
+          <span class="dot"></span> <span id="syncStatusText">Sin conectar.</span>
+        </div>
+        <div class="field-group full">
+          <label for="syncCodeInput">Código de sincronización (cualquiera que lo conozca puede leer y escribir estos datos)</label>
+          <input type="text" id="syncCodeInput" placeholder="ej: hernan-diario-2026">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-ghost" id="syncConnectBtn" type="button">Conectar con código</button>
+          <button class="btn-ghost" id="syncDisconnectBtn" type="button">Desconectar</button>
+        </div>
+      </div>
+
+      <p class="modal-hint">
+        Con cuenta: la primera vez que iniciás sesión en un dispositivo con datos ya cargados, esos datos
+        quedan asociados a tu cuenta automáticamente. En cualquier otro dispositivo, iniciá sesión con el
+        mismo email y contraseña para ver todo sincronizado.
+      </p>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay no-print" id="activityModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -1230,6 +1287,65 @@
   </div>
 </div>
 
+<div class="modal-overlay no-print" id="profileModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>👤 Mi perfil</h2>
+      <button class="modal-close" id="profileModalClose" type="button">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-text">Estos datos son tuyos, se guardan junto con el resto de tu información (local o en tu cuenta, según cómo estés sincronizando).</p>
+      <div class="field-group full">
+        <label for="profileEdadInput">Edad</label>
+        <input type="number" id="profileEdadInput" min="0" max="120" placeholder="Ej: 34">
+      </div>
+      <div class="field-group full">
+        <label for="profileGeneroInput">Género</label>
+        <select id="profileGeneroInput">
+          <option value="">Preferís no decir</option>
+          <option value="femenino">Femenino</option>
+          <option value="masculino">Masculino</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="field-group full">
+        <label for="profilePesoInput">Peso de referencia (kg)</label>
+        <input type="text" id="profilePesoInput" inputmode="decimal" placeholder="Ej: 98">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="profileSaveBtn" type="button">Guardar perfil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay no-print" id="goalModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="goalModalTitle">🎯 Nueva meta de peso</h2>
+      <button class="modal-close" id="goalModalClose" type="button">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group full">
+        <label for="goalLabelInput">Etiqueta</label>
+        <input type="text" id="goalLabelInput" placeholder="Ej: Meta intermedia, Meta final...">
+      </div>
+      <div class="field-group full">
+        <label for="goalWeightInput">Peso objetivo (kg)</label>
+        <input type="text" id="goalWeightInput" inputmode="decimal" placeholder="Ej: 90">
+      </div>
+      <div class="field-group full">
+        <label>Color</label>
+        <div class="color-swatch-row" id="goalColorRow"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="goalSaveBtn" type="button">Guardar meta</button>
+        <button class="btn-ghost" id="goalDeleteBtn" type="button" style="display:none;">Eliminar meta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
@@ -1245,22 +1361,22 @@ const DAY_NAMES = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 let entries = {};
 let dates = [];
 let activityLog = {};
+let profile = { edad: "", genero: "", peso: "" };
+let goals = [];
 let mobileCurrentDate = null;
 let saveTimeout = null;
 let authUser = null; // usuario de Firebase Auth con sesión iniciada (modo multitenant con cuenta)
 
-// Config del proyecto Firebase compartido por todos los usuarios de esta app.
-// Cada usuario se autentica con su propio email/contraseña y sus datos quedan
-// aislados en Firestore (colección "diarios_users", clave = su uid).
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyC3bBKBIcWmfHvzhhK5vWd6h6tAs7Us3EQ",
-  authDomain: "diario-alimentacion.firebaseapp.com",
-  projectId: "diario-alimentacion",
-  storageBucket: "diario-alimentacion.firebasestorage.app",
-  messagingSenderId: "9192786280",
-  appId: "1:9192786280:web:13c93a2985ddcad3156edd",
-  measurementId: "G-WTJVBRXEPV"
-};
+const DEFAULT_GOAL_WEIGHT = 95;
+const GOAL_COLORS = ["#E67E22", "#1E6B4C", "#4FB378", "#3B82C4", "#8B5FBF", "#D6577A"];
+
+// Si no hay ninguna meta cargada (instalación nueva, o datos de antes de que existieran
+// las metas múltiples), se siembra con la meta única que tenía la app anteriormente.
+function ensureDefaultGoal(){
+  if(!Array.isArray(goals) || goals.length === 0){
+    goals = [{ id: "default", label: "Meta", weight: DEFAULT_GOAL_WEIGHT, color: GOAL_COLORS[0] }];
+  }
+}
 
 // Capa de almacenamiento híbrida:
 // - Si el archivo se abre dentro del panel de artefactos de Claude, usa window.storage (persiste en tu cuenta).
@@ -1379,17 +1495,26 @@ async function loadData(){
       entries = parsed.entries || {};
       dates = parsed.dates && parsed.dates.length ? parsed.dates : buildInitialDates();
       activityLog = parsed.activityLog || {};
+      profile = parsed.profile || { edad: "", genero: "", peso: "" };
+      goals = parsed.goals || [];
       ensureEarlyDates();
       ensureNoDateGaps();
+      ensureDefaultGoal();
     } else {
       entries = {};
       dates = buildInitialDates();
       activityLog = {};
+      profile = { edad: "", genero: "", peso: "" };
+      goals = [];
+      ensureDefaultGoal();
     }
   } catch(e){
     entries = {};
     dates = buildInitialDates();
     activityLog = {};
+    profile = { edad: "", genero: "", peso: "" };
+    goals = [];
+    ensureDefaultGoal();
   }
   initMobileCurrentDate();
   renderTable();
@@ -1405,7 +1530,7 @@ function scheduleSave(){
 
 async function saveData(){
   try{
-    await storageSet(activeStorageKey(), JSON.stringify({ entries, dates, activityLog }));
+    await storageSet(activeStorageKey(), JSON.stringify({ entries, dates, activityLog, profile, goals }));
     setStatus(false);
   } catch(e){
     console.error("Error al guardar:", e);
@@ -1686,7 +1811,7 @@ document.getElementById("imprimirBtn").addEventListener("click", () => window.pr
 
 /* ---------- Exportar / Importar ---------- */
 document.getElementById("exportBtn").addEventListener("click", () => {
-  const payload = JSON.stringify({ entries, dates, activityLog }, null, 2);
+  const payload = JSON.stringify({ entries, dates, activityLog, profile, goals }, null, 2);
   const blob = new Blob([payload], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1722,6 +1847,8 @@ document.getElementById("importFile").addEventListener("change", (ev) => {
         entries = parsed.entries;
         dates = parsed.dates;
         activityLog = parsed.activityLog || {};
+        profile = parsed.profile || profile;
+        goals = parsed.goals || goals;
       } else {
         parsed.dates.forEach(d => {
           if(!dates.includes(d)) dates.push(d);
@@ -1740,12 +1867,19 @@ document.getElementById("importFile").addEventListener("change", (ev) => {
             if(!activityLog[d]) activityLog[d] = parsed.activityLog[d];
           });
         }
+        if(parsed.goals && parsed.goals.length){
+          parsed.goals.forEach(g => {
+            if(!goals.some(existing => existing.id === g.id)) goals.push(g);
+          });
+        }
       }
       ensureNoDateGaps();
+      ensureDefaultGoal();
       initMobileCurrentDate();
       renderTable();
       scheduleSave();
       setupChartRangeDefaults();
+      renderGoalsList();
       if(document.getElementById("tab-graficos").classList.contains("active")){
         renderCharts();
       }
@@ -1794,8 +1928,19 @@ document.addEventListener("click", (e) => {
 });
 
 /* ---------- Gráficos ---------- */
-const GOAL_WEIGHT = 95;
 let weightChartInstance = null;
+
+// Determina, para un peso actual dado, cuál es la próxima meta no alcanzada
+// (la de mayor peso entre las que todavía no se cruzaron) y si ya se alcanzaron todas.
+function getGoalStatus(currentWeight){
+  if(!goals || !goals.length) return { goal: null, allAchieved: false };
+  const sortedAsc = [...goals].sort((a,b) => a.weight - b.weight);
+  const unreached = sortedAsc.filter(g => currentWeight > g.weight);
+  if(unreached.length){
+    return { goal: unreached[unreached.length - 1], allAchieved: false };
+  }
+  return { goal: sortedAsc[0], allAchieved: true };
+}
 
 function parsePeso(str){
   if(!str) return NaN;
@@ -1858,6 +2003,7 @@ function renderCharts(){
 
     const rangeDates = dates.filter(d => d >= from && d <= to).sort();
 
+    renderGoalsList();
     renderWeightChart(rangeDates);
     updateGoalProgressRing();
   } catch(err){
@@ -1865,7 +2011,7 @@ function renderCharts(){
   }
 }
 
-// Progreso general hacia la meta: usa TODO el historial (no solo el período elegido),
+// Progreso general hacia la próxima meta: usa TODO el historial (no solo el período elegido),
 // desde el primer peso alguna vez registrado hasta el más reciente.
 function updateGoalProgressRing(){
   const sorted = [...dates].sort();
@@ -1875,17 +2021,31 @@ function updateGoalProgressRing(){
 
   const pctEl = document.getElementById("goalProgressPct");
   const descEl = document.getElementById("goalProgressDesc");
+  const titleEl = document.getElementById("goalProgressTitle");
 
   if(points.length === 0){
     setScoreRing("goalProgressRing", 0, "orange", 40);
     pctEl.textContent = "—";
+    titleEl.textContent = "Progreso hacia la meta";
     descEl.textContent = "Cargá tu peso para ver tu progreso.";
     return;
   }
 
   const first = points[0].peso;
   const last = points[points.length - 1].peso;
-  let pct = first <= GOAL_WEIGHT ? 100 : ((first - last) / (first - GOAL_WEIGHT)) * 100;
+  const { goal, allAchieved } = getGoalStatus(last);
+
+  if(!goal){
+    setScoreRing("goalProgressRing", 0, "orange", 40);
+    pctEl.textContent = "—";
+    titleEl.textContent = "Progreso hacia la meta";
+    descEl.textContent = "Agregá una meta de peso para ver tu progreso.";
+    return;
+  }
+
+  titleEl.textContent = allAchieved ? "🎉 ¡Metas alcanzadas!" : ("Progreso hacia: " + goal.label);
+
+  let pct = first <= goal.weight ? 100 : ((first - last) / (first - goal.weight)) * 100;
   pct = Math.max(0, Math.min(100, pct));
 
   // Tendencia: compara contra el peso de ~14 días atrás (o el primer punto si hay menos historial)
@@ -1900,9 +2060,9 @@ function updateGoalProgressRing(){
   const kgPerWeek = refPoint === points[points.length-1] ? 0 : ((refPoint.peso - last) / daysSpan) * 7;
 
   let status, trendText;
-  if(last <= GOAL_WEIGHT){
+  if(allAchieved){
     status = "green";
-    trendText = "¡Meta alcanzada! Estás en " + last.toFixed(1) + " kg.";
+    trendText = "¡Alcanzaste tu meta más exigente (" + goal.weight + " kg)!";
   } else if(kgPerWeek >= 0.25){
     status = "green";
     trendText = "Bajando a buen ritmo: " + kgPerWeek.toFixed(2) + " kg/semana.";
@@ -1916,7 +2076,7 @@ function updateGoalProgressRing(){
 
   setScoreRing("goalProgressRing", pct, status, 40);
   pctEl.textContent = Math.round(pct) + "%";
-  descEl.innerHTML = "Vas de <b>" + first.toFixed(1) + " kg</b> a <b>" + last.toFixed(1) + " kg</b> · meta " + GOAL_WEIGHT + " kg.<br>" + trendText;
+  descEl.innerHTML = "Vas de <b>" + first.toFixed(1) + " kg</b> a <b>" + last.toFixed(1) + " kg</b> · meta " + goal.weight + " kg.<br>" + trendText;
 }
 
 function renderWeightChart(rangeDates){
@@ -1937,6 +2097,7 @@ function renderWeightChart(rangeDates){
     document.getElementById("statPesoFinal").textContent = "—";
     document.getElementById("statDescenso").textContent = "—";
     document.getElementById("statDescenso").classList.remove("negative");
+    document.getElementById("statFaltaMetaLabel").textContent = "Falta para la meta";
     faltaEl.textContent = "—";
     faltaEl.classList.remove("negative");
     diasSeguimientoEl.textContent = "—";
@@ -1968,38 +2129,49 @@ function renderWeightChart(rangeDates){
     descensoEl.classList.add("negative");
   }
 
-  // Cuánto falta para la meta de 95 kg (según el último peso registrado)
-  const faltaMeta = last - GOAL_WEIGHT;
-  if(faltaMeta <= 0){
-    faltaEl.textContent = "¡Meta alcanzada! (-" + Math.abs(faltaMeta).toFixed(1) + " kg)";
-    faltaEl.classList.remove("negative");
-  } else {
-    faltaEl.textContent = faltaMeta.toFixed(1) + " kg";
-    faltaEl.classList.add("negative");
-  }
-
   // Días de seguimiento: desde el primer peso registrado hasta el último, dentro del período
   const firstDate = parseDateLocal(points[0].date);
   const lastDate = parseDateLocal(points[points.length-1].date);
   const diasTranscurridos = Math.round((lastDate - firstDate) / (1000*60*60*24));
   diasSeguimientoEl.textContent = diasTranscurridos + (diasTranscurridos === 1 ? " día" : " días");
 
-  // Proyección: con la tendencia actual (kg perdidos por día), cuántos días faltan para la meta
-  if(faltaMeta <= 0){
-    diasParaMetaEl.textContent = "¡Ya la alcanzaste!";
-    diasParaMetaEl.classList.remove("negative");
-  } else if(points.length < 2 || diasTranscurridos <= 0){
-    diasParaMetaEl.textContent = "Datos insuficientes";
+  // Cuánto falta para la próxima meta no alcanzada (según el último peso registrado)
+  const faltaLabelEl = document.getElementById("statFaltaMetaLabel");
+  const { goal: nextGoal, allAchieved } = getGoalStatus(last);
+
+  if(!nextGoal){
+    faltaLabelEl.textContent = "Falta para la meta";
+    faltaEl.textContent = "Sin metas cargadas";
+    faltaEl.classList.remove("negative");
+    diasParaMetaEl.textContent = "—";
     diasParaMetaEl.classList.remove("negative");
   } else {
-    const ritmoDiario = descenso / diasTranscurridos; // kg perdidos por día
-    if(ritmoDiario <= 0){
-      diasParaMetaEl.textContent = "Sin tendencia de baja";
-      diasParaMetaEl.classList.add("negative");
+    faltaLabelEl.textContent = "Falta para " + nextGoal.label + " (" + nextGoal.weight + " kg)";
+    const faltaMeta = last - nextGoal.weight;
+    if(allAchieved || faltaMeta <= 0){
+      faltaEl.textContent = "¡Meta alcanzada! (-" + Math.abs(faltaMeta).toFixed(1) + " kg)";
+      faltaEl.classList.remove("negative");
     } else {
-      const diasProyectados = Math.ceil(faltaMeta / ritmoDiario);
-      diasParaMetaEl.textContent = diasProyectados + (diasProyectados === 1 ? " día" : " días");
+      faltaEl.textContent = faltaMeta.toFixed(1) + " kg";
+      faltaEl.classList.add("negative");
+    }
+
+    if(allAchieved || faltaMeta <= 0){
+      diasParaMetaEl.textContent = "¡Ya la alcanzaste!";
       diasParaMetaEl.classList.remove("negative");
+    } else if(points.length < 2 || diasTranscurridos <= 0){
+      diasParaMetaEl.textContent = "Datos insuficientes";
+      diasParaMetaEl.classList.remove("negative");
+    } else {
+      const ritmoDiario = descenso / diasTranscurridos;
+      if(ritmoDiario <= 0){
+        diasParaMetaEl.textContent = "Sin tendencia de baja";
+        diasParaMetaEl.classList.add("negative");
+      } else {
+        const diasProyectados = Math.ceil(faltaMeta / ritmoDiario);
+        diasParaMetaEl.textContent = diasProyectados + (diasProyectados === 1 ? " día" : " días");
+        diasParaMetaEl.classList.remove("negative");
+      }
     }
   }
 
@@ -2008,7 +2180,19 @@ function renderWeightChart(rangeDates){
     return String(dd.getDate()).padStart(2,"0") + "/" + String(dd.getMonth()+1).padStart(2,"0");
   });
   const data = points.map(p => p.peso);
-  const goalLine = points.map(() => GOAL_WEIGHT);
+  const goalDatasets = (goals || []).map(g => ({
+    label: g.label + " (" + g.weight + " kg)",
+    data: points.map(() => g.weight),
+    borderColor: g.color,
+    borderWidth: 1.5,
+    borderDash: [5, 5],
+    pointRadius: 0,
+    fill: false,
+    tension: 0
+  }));
+
+  const goalWeights = (goals || []).map(g => g.weight);
+  const yMin = Math.floor(Math.min(90, ...goalWeights, ...data) / 5) * 5;
 
   if(weightChartInstance){ weightChartInstance.destroy(); weightChartInstance = null; }
   const ctx = document.getElementById("weightChart").getContext("2d");
@@ -2032,16 +2216,7 @@ function renderWeightChart(rangeDates){
           fill: true,
           spanGaps: true
         },
-        {
-          label: "Meta (" + GOAL_WEIGHT + " kg)",
-          data: goalLine,
-          borderColor: "#E67E22",
-          borderWidth: 1.5,
-          borderDash: [5, 5],
-          pointRadius: 0,
-          fill: false,
-          tension: 0
-        }
+        ...goalDatasets
       ]
     },
     options: {
@@ -2049,14 +2224,166 @@ function renderWeightChart(rangeDates){
       maintainAspectRatio: false,
       plugins: { legend: { display: true, position: "bottom", labels: { boxWidth: 12, usePointStyle: true, color: "#707B75" } } },
       scales: {
-        y: { min: 90, ticks: { callback: v => v + " kg", color: "#707B75" }, grid: { color: "#F0F2EF" } },
+        y: { min: yMin, ticks: { callback: v => v + " kg", color: "#707B75" }, grid: { color: "#F0F2EF" } },
         x: { ticks: { color: "#707B75" }, grid: { display: false } }
       }
     }
   });
 }
 
+/* ================= Metas de peso ================= */
+let editingGoalId = null;
+
+function renderGoalsList(){
+  const listEl = document.getElementById("goalsList");
+  const emptyEl = document.getElementById("goalsEmpty");
+  if(!listEl || !emptyEl) return;
+  listEl.innerHTML = "";
+  if(!goals || goals.length === 0){
+    emptyEl.style.display = "block";
+    return;
+  }
+  emptyEl.style.display = "none";
+  [...goals].sort((a,b) => b.weight - a.weight).forEach(g => {
+    const row = document.createElement("div");
+    row.className = "goal-row";
+
+    const dot = document.createElement("span");
+    dot.className = "goal-dot";
+    dot.style.background = g.color;
+
+    const label = document.createElement("span");
+    label.className = "goal-label";
+    label.textContent = g.label;
+
+    const weight = document.createElement("span");
+    weight.className = "goal-weight";
+    weight.textContent = g.weight + " kg";
+
+    row.appendChild(dot);
+    row.appendChild(label);
+    row.appendChild(weight);
+    row.addEventListener("click", () => openGoalModal(g.id));
+    listEl.appendChild(row);
+  });
+}
+
+function renderColorSwatches(selectedColor){
+  const row = document.getElementById("goalColorRow");
+  row.innerHTML = "";
+  GOAL_COLORS.forEach(color => {
+    const sw = document.createElement("div");
+    sw.className = "color-swatch" + (color === selectedColor ? " selected" : "");
+    sw.style.background = color;
+    sw.dataset.color = color;
+    sw.addEventListener("click", () => {
+      row.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
+      sw.classList.add("selected");
+    });
+    row.appendChild(sw);
+  });
+}
+
+function openGoalModal(goalId){
+  editingGoalId = goalId || null;
+  const modal = document.getElementById("goalModal");
+  const titleEl = document.getElementById("goalModalTitle");
+  const deleteBtn = document.getElementById("goalDeleteBtn");
+
+  if(editingGoalId){
+    const g = goals.find(x => x.id === editingGoalId);
+    if(!g) return;
+    titleEl.textContent = "🎯 Editar meta";
+    document.getElementById("goalLabelInput").value = g.label;
+    document.getElementById("goalWeightInput").value = g.weight;
+    renderColorSwatches(g.color);
+    deleteBtn.style.display = "";
+  } else {
+    titleEl.textContent = "🎯 Nueva meta de peso";
+    document.getElementById("goalLabelInput").value = "";
+    document.getElementById("goalWeightInput").value = "";
+    const usedColors = goals.map(g => g.color);
+    const suggested = GOAL_COLORS.find(c => !usedColors.includes(c)) || GOAL_COLORS[0];
+    renderColorSwatches(suggested);
+    deleteBtn.style.display = "none";
+  }
+  modal.classList.add("open");
+}
+
+document.getElementById("addGoalBtn").addEventListener("click", () => openGoalModal(null));
+document.getElementById("goalModalClose").addEventListener("click", () => document.getElementById("goalModal").classList.remove("open"));
+document.getElementById("goalModal").addEventListener("click", (e) => {
+  if(e.target.id === "goalModal") document.getElementById("goalModal").classList.remove("open");
+});
+
+document.getElementById("goalSaveBtn").addEventListener("click", () => {
+  const label = document.getElementById("goalLabelInput").value.trim();
+  const weightVal = parsePeso(document.getElementById("goalWeightInput").value);
+  const selectedSwatch = document.querySelector("#goalColorRow .color-swatch.selected");
+  const color = selectedSwatch ? selectedSwatch.dataset.color : GOAL_COLORS[0];
+
+  if(!label){ alert("Ponele una etiqueta a la meta."); return; }
+  if(isNaN(weightVal) || weightVal <= 0){ alert("Ingresá un peso objetivo válido."); return; }
+
+  if(editingGoalId){
+    const g = goals.find(x => x.id === editingGoalId);
+    if(g){ g.label = label; g.weight = weightVal; g.color = color; }
+  } else {
+    goals.push({ id: "goal-" + Date.now(), label, weight: weightVal, color });
+  }
+
+  document.getElementById("goalModal").classList.remove("open");
+  scheduleSave();
+  renderGoalsList();
+  renderCharts();
+});
+
+document.getElementById("goalDeleteBtn").addEventListener("click", () => {
+  if(!editingGoalId) return;
+  if(!confirm("¿Eliminar esta meta?")) return;
+  goals = goals.filter(g => g.id !== editingGoalId);
+  document.getElementById("goalModal").classList.remove("open");
+  scheduleSave();
+  renderGoalsList();
+  renderCharts();
+});
+
+/* ================= Perfil de usuario ================= */
+document.getElementById("profileBtn").addEventListener("click", () => {
+  document.getElementById("profileEdadInput").value = profile.edad || "";
+  document.getElementById("profileGeneroInput").value = profile.genero || "";
+  document.getElementById("profilePesoInput").value = profile.peso || "";
+  document.getElementById("profileModal").classList.add("open");
+});
+document.getElementById("profileModalClose").addEventListener("click", () => document.getElementById("profileModal").classList.remove("open"));
+document.getElementById("profileModal").addEventListener("click", (e) => {
+  if(e.target.id === "profileModal") document.getElementById("profileModal").classList.remove("open");
+});
+document.getElementById("profileSaveBtn").addEventListener("click", () => {
+  profile = {
+    edad: document.getElementById("profileEdadInput").value,
+    genero: document.getElementById("profileGeneroInput").value,
+    peso: document.getElementById("profilePesoInput").value
+  };
+  scheduleSave();
+  document.getElementById("profileModal").classList.remove("open");
+});
+
+loadData().then(() => {
+  setupChartRangeDefaults();
+  renderGoalsList();
+  initCloudSync();
+});
+
+/* ================= Sincronización con Firebase (Firestore) ================= */
+const SYNC_CONFIG_KEY = "diario-sync-config";
 const DEVICE_ID_KEY = "diario-device-id";
+
+let cloudApp = null;
+let cloudDb = null;
+let cloudDocRef = null;
+let cloudUnsubscribe = null;
+let cloudReady = false;
 
 function getDeviceId(){
   let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -2068,10 +2395,55 @@ function getDeviceId(){
 }
 const DEVICE_ID = getDeviceId();
 
+function getSyncConfig(){
+  try{
+    const raw = localStorage.getItem(SYNC_CONFIG_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+
+function saveSyncConfig(cfg){
+  localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(cfg));
+}
+
+function clearSyncConfig(){
+  localStorage.removeItem(SYNC_CONFIG_KEY);
+}
+
+function sanitizeSyncCode(code){
+  return String(code).trim().toLowerCase().replace(/[^a-z0-9\-_]+/g, "-").slice(0, 120) || "default";
+}
+
+// Parser tolerante: acepta tanto JSON válido como el objeto literal tal cual lo
+// muestra la consola de Firebase (claves sin comillas).
+function parseFirebaseConfig(text){
+  const trimmed = text.trim();
+  try{
+    return JSON.parse(trimmed);
+  } catch(e){
+    try{
+      return Function('"use strict"; return (' + trimmed + ");")();
+    } catch(e2){
+      throw new Error("No se pudo interpretar la configuración pegada.");
+    }
+  }
+}
+
+function setSyncStatus(state, message){
+  const box = document.getElementById("syncStatusBox");
+  const text = document.getElementById("syncStatusText");
+  box.classList.remove("connected", "error");
+  if(state === "connected") box.classList.add("connected");
+  if(state === "error") box.classList.add("error");
+  text.textContent = message;
+}
+
 function updateStorageLegendForSync(){
   const legend = document.getElementById("storageLegend");
   if(authUser){
     legend.textContent = "Conectado como " + authUser.email + " — tus datos son privados y se sincronizan solo entre tus dispositivos.";
+  } else if(cloudReady){
+    legend.textContent = "Sincronización en la nube activa (código compartido) — cualquiera con el código puede acceder a estos datos.";
   } else {
     legend.textContent = hasCloudStorage
       ? "Los datos se guardan automáticamente en tu cuenta de Claude."
@@ -2079,25 +2451,179 @@ function updateStorageLegendForSync(){
   }
 }
 
-// Hook: cada vez que se guarda localmente, si hay sesión iniciada, también se envía a la nube.
+async function initCloudSync(){
+  const cfg = getSyncConfig();
+  if(!cfg || !cfg.firebaseConfig || !cfg.syncCode) return;
+  await connectCloudSync(cfg.firebaseConfig, cfg.syncCode, true);
+}
+
+async function connectCloudSync(firebaseConfig, syncCodeRaw, silent){
+  const syncCode = sanitizeSyncCode(syncCodeRaw);
+  try{
+    if(!silent) setSyncStatus("idle", "Conectando...");
+
+    if(cloudUnsubscribe){ cloudUnsubscribe(); cloudUnsubscribe = null; }
+    if(cloudApp){ try{ await cloudApp.delete(); } catch(e){} cloudApp = null; }
+
+    cloudApp = firebase.initializeApp(firebaseConfig, "diarioApp_" + Date.now());
+    await cloudApp.auth().signInAnonymously();
+    cloudDb = cloudApp.firestore();
+    cloudDocRef = cloudDb.collection("diarios").doc(syncCode);
+
+    const snap = await cloudDocRef.get();
+    if(snap.exists){
+      // Ya hay datos en la nube con este código: los tomamos como fuente de verdad.
+      const data = snap.data();
+      entries = data.entries || {};
+      dates = (data.dates && data.dates.length) ? data.dates : dates;
+      activityLog = data.activityLog || {};
+      profile = data.profile || profile;
+      goals = (data.goals && data.goals.length) ? data.goals : goals;
+      ensureDefaultGoal();
+      ensureNoDateGaps();
+      initMobileCurrentDate();
+      renderTable();
+      setupChartRangeDefaults();
+      renderGoalsList();
+      if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
+      if(document.getElementById("tab-actividad").classList.contains("active")) renderCalendar();
+    } else {
+      // No existe todavía: este dispositivo "siembra" la nube con lo que ya tiene cargado.
+      cloudReady = true;
+      await pushToCloud();
+    }
+
+    cloudUnsubscribe = cloudDocRef.onSnapshot((doc) => {
+      if(!doc.exists) return;
+      const data = doc.data();
+      if(data.deviceId === DEVICE_ID) return; // eco de nuestro propio guardado, lo ignoramos
+      entries = data.entries || {};
+      dates = (data.dates && data.dates.length) ? data.dates : dates;
+      activityLog = data.activityLog || {};
+      profile = data.profile || profile;
+      goals = (data.goals && data.goals.length) ? data.goals : goals;
+      ensureDefaultGoal();
+      ensureNoDateGaps();
+      initMobileCurrentDate();
+      renderTable();
+      setupChartRangeDefaults();
+      renderGoalsList();
+      if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
+      if(document.getElementById("tab-actividad").classList.contains("active")) renderCalendar();
+      setSyncStatus("connected", "Sincronizado — última actualización recibida de otro dispositivo.");
+    }, (err) => {
+      console.error("Error de sincronización:", err);
+      setSyncStatus("error", "Se perdió la conexión con la sincronización: " + err.message);
+    });
+
+    cloudReady = true;
+    saveSyncConfig({ firebaseConfig, syncCode: syncCodeRaw });
+    updateStorageLegendForSync();
+    setSyncStatus("connected", "Conectado. Código de sincronización: " + syncCode);
+  } catch(err){
+    console.error("Error al conectar la sincronización:", err);
+    cloudReady = false;
+    setSyncStatus("error", "No se pudo conectar: " + err.message);
+  }
+}
+
+async function pushToCloud(){
+  if(!cloudDocRef) return;
+  try{
+    await cloudDocRef.set({
+      entries,
+      dates,
+      activityLog,
+      profile,
+      goals,
+      deviceId: DEVICE_ID,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(err){
+    console.error("No se pudo enviar a la nube:", err);
+    setSyncStatus("error", "No se pudieron enviar los últimos cambios: " + err.message);
+  }
+}
+
+function disconnectCloudSync(){
+  if(cloudUnsubscribe){ cloudUnsubscribe(); cloudUnsubscribe = null; }
+  if(cloudApp){ cloudApp.delete().catch(() => {}); cloudApp = null; }
+  cloudDb = null;
+  cloudDocRef = null;
+  cloudReady = false;
+  clearSyncConfig();
+  updateStorageLegendForSync();
+  setSyncStatus("idle", "Sin conectar — los datos se guardan solo en este dispositivo.");
+}
+
+// Modal de sincronización
+const syncModal = document.getElementById("syncModal");
+document.getElementById("syncBtn").addEventListener("click", () => {
+  const cfg = getSyncConfig();
+  const acctCfg = getAccountConfig();
+  if(cfg){
+    document.getElementById("syncConfigInput").value = JSON.stringify(cfg.firebaseConfig, null, 2);
+    document.getElementById("syncCodeInput").value = cfg.syncCode;
+  } else if(acctCfg){
+    document.getElementById("syncConfigInput").value = JSON.stringify(acctCfg.firebaseConfig, null, 2);
+  }
+  if(authUser){
+    document.getElementById("accountEmailInput").value = authUser.email;
+  }
+  syncModal.classList.add("open");
+});
+document.getElementById("syncModalClose").addEventListener("click", () => syncModal.classList.remove("open"));
+syncModal.addEventListener("click", (e) => { if(e.target === syncModal) syncModal.classList.remove("open"); });
+
+document.getElementById("syncConnectBtn").addEventListener("click", async () => {
+  const rawConfig = document.getElementById("syncConfigInput").value;
+  const syncCode = document.getElementById("syncCodeInput").value;
+  if(!rawConfig.trim() || !syncCode.trim()){
+    setSyncStatus("error", "Completá la configuración de Firebase y un código de sincronización.");
+    return;
+  }
+  let firebaseConfig;
+  try{
+    firebaseConfig = parseFirebaseConfig(rawConfig);
+  } catch(err){
+    setSyncStatus("error", err.message);
+    return;
+  }
+  await connectCloudSync(firebaseConfig, syncCode, false);
+});
+
+document.getElementById("syncDisconnectBtn").addEventListener("click", () => {
+  disconnectCloudSync();
+});
+
+// Hook: cada vez que se guarda localmente, si hay sincronización activa, también se envía a la nube.
 const originalSaveData = saveData;
 saveData = async function(){
   await originalSaveData();
+  if(cloudReady){ pushToCloud(); }
   if(userCloudReady){ pushToUserCloud(); }
 };
 
 /* ================= Cuenta multitenant (Firebase Authentication) =================
-   Cada usuario se registra o inicia sesión con su email/contraseña en la pantalla de
-   acceso (#authGate) antes de poder ver la app. Cada cuenta obtiene su propio documento
+   Cada usuario que inicia sesión con su email/contraseña obtiene su propio documento
    en Firestore (colección "diarios_users", clave = su uid), totalmente aislado del de
-   cualquier otra persona que use este mismo sitio. */
+   cualquier otra persona que use este mismo sitio. No reemplaza el modo "código simple"
+   existente (que sigue funcionando igual que antes); es una alternativa más segura. */
+const ACCOUNT_CONFIG_KEY = "diario-account-config";
+
 let authApp = null;
 let userDocRef = null;
 let userUnsubscribe = null;
 let userCloudReady = false;
+let pendingGuestSeed = null;
 
-const authGateEl = document.getElementById("authGate");
-const appRootEl = document.getElementById("appRoot");
+function getAccountConfig(){
+  try{
+    const raw = localStorage.getItem(ACCOUNT_CONFIG_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+function saveAccountConfig(cfg){ localStorage.setItem(ACCOUNT_CONFIG_KEY, JSON.stringify(cfg)); }
 
 function setAccountStatus(state, message){
   const box = document.getElementById("accountStatusBox");
@@ -2133,20 +2659,27 @@ async function initAccountAuth(firebaseConfig){
     if(user){
       authUser = user;
       setAccountStatus("connected", "Conectado como " + user.email);
-      authGateEl.classList.add("hidden");
-      appRootEl.classList.add("app-visible");
+      document.getElementById("accountLoginFields").style.display = "none";
+      document.getElementById("accountLogoutBtn").style.display = "";
       await attachUserDoc();
       updateStorageLegendForSync();
     } else {
       if(userUnsubscribe){ userUnsubscribe(); userUnsubscribe = null; }
       authUser = null;
-      userDocRef = null;
       userCloudReady = false;
-      setAccountStatus("idle", "Iniciá sesión o creá una cuenta para continuar.");
-      authGateEl.classList.remove("hidden");
-      appRootEl.classList.remove("app-visible");
+      setAccountStatus("idle", "No iniciaste sesión.");
+      document.getElementById("accountLoginFields").style.display = "";
+      document.getElementById("accountLogoutBtn").style.display = "none";
+      updateStorageLegendForSync();
     }
   });
+}
+
+async function initAccountAuthFromSavedConfig(){
+  const cfg = getAccountConfig();
+  if(cfg && cfg.firebaseConfig){
+    await initAccountAuth(cfg.firebaseConfig);
+  }
 }
 
 async function attachUserDoc(){
@@ -2163,12 +2696,22 @@ async function attachUserDoc(){
     entries = data.entries || {};
     dates = (data.dates && data.dates.length) ? data.dates : dates;
     activityLog = data.activityLog || {};
+    profile = data.profile || profile;
+    goals = (data.goals && data.goals.length) ? data.goals : goals;
+    ensureDefaultGoal();
+  } else if(pendingGuestSeed){
+    // Cuenta nueva: la sembramos con los datos que ya tenías cargados antes de iniciar sesión.
+    entries = pendingGuestSeed.entries;
+    dates = pendingGuestSeed.dates;
+    activityLog = pendingGuestSeed.activityLog;
   }
+  pendingGuestSeed = null;
 
   initMobileCurrentDate();
   renderTable();
   setupChartRangeDefaults();
-  if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
+  renderGoalsList();
+      if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
   if(document.getElementById("tab-actividad").classList.contains("active")) renderCalendar();
 
   if(userUnsubscribe) userUnsubscribe();
@@ -2179,10 +2722,14 @@ async function attachUserDoc(){
     entries = data.entries || {};
     dates = (data.dates && data.dates.length) ? data.dates : dates;
     activityLog = data.activityLog || {};
+    profile = data.profile || profile;
+    goals = (data.goals && data.goals.length) ? data.goals : goals;
+    ensureDefaultGoal();
     initMobileCurrentDate();
     renderTable();
     setupChartRangeDefaults();
-    if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
+    renderGoalsList();
+      if(document.getElementById("tab-graficos").classList.contains("active")) renderCharts();
     if(document.getElementById("tab-actividad").classList.contains("active")) renderCalendar();
   }, (err) => {
     console.error("Error de sincronización de cuenta:", err);
@@ -2197,7 +2744,7 @@ async function pushToUserCloud(){
   if(!userDocRef) return;
   try{
     await userDocRef.set({
-      entries, dates, activityLog,
+      entries, dates, activityLog, profile, goals,
       deviceId: DEVICE_ID,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -2206,26 +2753,50 @@ async function pushToUserCloud(){
   }
 }
 
+function captureGuestSeed(){
+  pendingGuestSeed = {
+    entries: JSON.parse(JSON.stringify(entries)),
+    dates: [...dates],
+    activityLog: JSON.parse(JSON.stringify(activityLog))
+  };
+}
+
 document.getElementById("accountLoginBtn").addEventListener("click", async () => {
+  const rawConfig = document.getElementById("syncConfigInput").value;
   const email = document.getElementById("accountEmailInput").value.trim();
   const password = document.getElementById("accountPasswordInput").value;
+  if(!rawConfig.trim()){ setAccountStatus("error", "Pegá primero la configuración de Firebase."); return; }
   if(!email || !password){ setAccountStatus("error", "Completá email y contraseña."); return; }
+  let firebaseConfig;
+  try{ firebaseConfig = parseFirebaseConfig(rawConfig); } catch(err){ setAccountStatus("error", err.message); return; }
+  saveAccountConfig({ firebaseConfig });
+  await initAccountAuth(firebaseConfig);
+  captureGuestSeed();
   setAccountStatus("idle", "Iniciando sesión...");
   try{
     await authApp.auth().signInWithEmailAndPassword(email, password);
   } catch(err){
+    pendingGuestSeed = null;
     setAccountStatus("error", translateAuthError(err));
   }
 });
 
 document.getElementById("accountSignupBtn").addEventListener("click", async () => {
+  const rawConfig = document.getElementById("syncConfigInput").value;
   const email = document.getElementById("accountEmailInput").value.trim();
   const password = document.getElementById("accountPasswordInput").value;
+  if(!rawConfig.trim()){ setAccountStatus("error", "Pegá primero la configuración de Firebase."); return; }
   if(!email || !password){ setAccountStatus("error", "Completá email y contraseña."); return; }
+  let firebaseConfig;
+  try{ firebaseConfig = parseFirebaseConfig(rawConfig); } catch(err){ setAccountStatus("error", err.message); return; }
+  saveAccountConfig({ firebaseConfig });
+  await initAccountAuth(firebaseConfig);
+  captureGuestSeed();
   setAccountStatus("idle", "Creando cuenta...");
   try{
     await authApp.auth().createUserWithEmailAndPassword(email, password);
   } catch(err){
+    pendingGuestSeed = null;
     setAccountStatus("error", translateAuthError(err));
   }
 });
@@ -2233,12 +2804,18 @@ document.getElementById("accountSignupBtn").addEventListener("click", async () =
 document.getElementById("accountLogoutBtn").addEventListener("click", async () => {
   if(authApp){
     await authApp.auth().signOut();
+    // Volvemos al modo local (sin cuenta): recargamos lo que corresponda a ese modo.
+    await loadData();
   }
 });
 
 document.getElementById("accountForgotBtn").addEventListener("click", async () => {
+  const rawConfig = document.getElementById("syncConfigInput").value;
   const email = document.getElementById("accountEmailInput").value.trim();
   if(!email){ setAccountStatus("error", "Escribí tu email arriba primero."); return; }
+  let firebaseConfig;
+  try{ firebaseConfig = parseFirebaseConfig(rawConfig); } catch(err){ setAccountStatus("error", err.message); return; }
+  await initAccountAuth(firebaseConfig);
   try{
     await authApp.auth().sendPasswordResetEmail(email);
     setAccountStatus("connected", "Te enviamos un email para recuperar tu contraseña.");
@@ -2247,7 +2824,7 @@ document.getElementById("accountForgotBtn").addEventListener("click", async () =
   }
 });
 
-initAccountAuth(FIREBASE_CONFIG);
+initAccountAuthFromSavedConfig();
 
 /* ================= Actividad física (calendario) ================= */
 const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
