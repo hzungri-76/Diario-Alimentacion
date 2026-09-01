@@ -433,16 +433,54 @@
   .score-ring-label .num{ font-family:'Baloo 2', sans-serif; font-weight:700; line-height:1; }
   .score-ring-label .unit{ font-size:0.62rem; color: var(--ink-soft); font-weight:600; margin-top:1px; }
 
-  .goal-progress-card{
+  .goals-unified-card{
+    margin-top: 22px;
+  }
+
+  .goal-carousel{
+    display:flex;
+    gap: 28px;
+  }
+  .goal-panel{
     display:flex;
     align-items:center;
     gap: 20px;
     flex-wrap:wrap;
+    flex: 1;
+    min-width: 0;
   }
   .goal-progress-text{ flex:1; min-width:180px; }
   .goal-progress-title{ font-family:'Baloo 2', sans-serif; font-weight:600; font-size:1.05rem; color: var(--ink); margin-bottom:4px; }
   .goal-progress-desc{ font-size:0.84rem; color: var(--ink-soft); line-height:1.5; }
   .goal-progress-desc b{ color: var(--ink); }
+
+  .goal-carousel-dots{ display:none; }
+  .carousel-dot{
+    width:7px; height:7px; border-radius:50%; background: var(--paper-line); display:inline-block;
+  }
+  .carousel-dot.active{ background: var(--forest); }
+
+  @media (max-width: 760px){
+    .goal-carousel{
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      gap: 0;
+      scrollbar-width: none;
+    }
+    .goal-carousel::-webkit-scrollbar{ display:none; }
+    .goal-panel{
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
+    .goal-carousel-dots{
+      display:flex;
+      justify-content:center;
+      gap: 6px;
+      margin-top: 14px;
+    }
+  }
 
   .color-swatch-row{ display:flex; gap:10px; flex-wrap:wrap; }
   .color-swatch{
@@ -986,6 +1024,7 @@
     <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Menú">☰</button>
     <div class="hamburger-panel">
       <button id="profileBtn" type="button">👤 Mi perfil</button>
+      <button id="goalsMenuBtn" type="button">🎯 Metas de peso</button>
       <button id="exportBtn" type="button">⬇ Exportar datos</button>
       <button id="importBtn" type="button">⬆ Importar datos</button>
       <button id="syncBtn" type="button">🔄 Sincronización</button>
@@ -1113,27 +1152,44 @@
       <button class="btn-ghost" id="resetChartRange">Período por defecto</button>
     </div>
 
-    <div class="chart-card">
-      <h3>🎯 Tus metas de peso</h3>
-      <div class="goals-list" id="goalsList"></div>
-      <div class="goals-empty" id="goalsEmpty" style="display:none;">Todavía no cargaste ninguna meta.</div>
-      <button class="btn-ghost" id="addGoalBtn" type="button">+ Agregar meta</button>
-    </div>
-
-    <div class="chart-card goal-progress-card">
-      <div class="score-ring" id="goalProgressRing" style="width:96px;height:96px;">
-        <svg width="96" height="96" viewBox="0 0 96 96">
-          <circle class="ring-track" cx="48" cy="48" r="40" stroke-width="8"></circle>
-          <circle class="ring-fill" cx="48" cy="48" r="40" stroke-width="8"></circle>
-        </svg>
-        <div class="score-ring-label">
-          <span class="num" id="goalProgressPct" style="font-size:1.3rem;">—</span>
-          <span class="unit">al objetivo</span>
+    <div class="chart-card goals-unified-card">
+      <div class="goal-carousel" id="goalCarousel">
+        <div class="goal-panel">
+          <div class="score-ring" id="goalInicialRing" style="width:88px;height:88px;">
+            <svg width="88" height="88" viewBox="0 0 88 88">
+              <circle class="ring-track" cx="44" cy="44" r="36" stroke-width="7"></circle>
+              <circle class="ring-fill" cx="44" cy="44" r="36" stroke-width="7"></circle>
+            </svg>
+            <div class="score-ring-label">
+              <span class="num" id="goalInicialPct" style="font-size:1.2rem;">—</span>
+              <span class="unit">al objetivo</span>
+            </div>
+          </div>
+          <div class="goal-progress-text">
+            <div class="goal-progress-title" id="goalInicialTitle">Meta inicial</div>
+            <div class="goal-progress-desc" id="goalInicialDesc">Cargá tu peso para ver tu progreso.</div>
+          </div>
+        </div>
+        <div class="goal-panel">
+          <div class="score-ring" id="goalFinalRing" style="width:88px;height:88px;">
+            <svg width="88" height="88" viewBox="0 0 88 88">
+              <circle class="ring-track" cx="44" cy="44" r="36" stroke-width="7"></circle>
+              <circle class="ring-fill" cx="44" cy="44" r="36" stroke-width="7"></circle>
+            </svg>
+            <div class="score-ring-label">
+              <span class="num" id="goalFinalPct" style="font-size:1.2rem;">—</span>
+              <span class="unit">al objetivo</span>
+            </div>
+          </div>
+          <div class="goal-progress-text">
+            <div class="goal-progress-title" id="goalFinalTitle">Meta final</div>
+            <div class="goal-progress-desc" id="goalFinalDesc">Cargá tu peso para ver tu progreso.</div>
+          </div>
         </div>
       </div>
-      <div class="goal-progress-text">
-        <div class="goal-progress-title" id="goalProgressTitle">Progreso hacia la meta</div>
-        <div class="goal-progress-desc" id="goalProgressDesc">Cargá tu peso para ver tu progreso.</div>
+      <div class="goal-carousel-dots" id="goalCarouselDots">
+        <span class="carousel-dot active" data-index="0"></span>
+        <span class="carousel-dot" data-index="1"></span>
       </div>
     </div>
 
@@ -1315,6 +1371,20 @@
       <div class="modal-actions">
         <button class="btn-primary" id="profileSaveBtn" type="button">Guardar perfil</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay no-print" id="goalsListModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🎯 Tus metas de peso</h2>
+      <button class="modal-close" id="goalsListModalClose" type="button">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="goals-list" id="goalsList"></div>
+      <div class="goals-empty" id="goalsEmpty" style="display:none;">Todavía no cargaste ninguna meta.</div>
+      <button class="btn-ghost" id="addGoalBtn" type="button">+ Agregar meta</button>
     </div>
   </div>
 </div>
@@ -2005,64 +2075,24 @@ function renderCharts(){
 
     renderGoalsList();
     renderWeightChart(rangeDates);
-    updateGoalProgressRing();
+    updateGoalProgressRings();
   } catch(err){
     console.error("Error al renderizar los gráficos:", err);
   }
 }
 
-// Progreso general hacia la próxima meta: usa TODO el historial (no solo el período elegido),
-// desde el primer peso alguna vez registrado hasta el más reciente.
-function updateGoalProgressRing(){
-  const sorted = [...dates].sort();
-  const points = sorted
-    .map(d => ({ date: d, peso: parsePeso(entries[d] && entries[d].peso) }))
-    .filter(p => !isNaN(p.peso));
-
-  const pctEl = document.getElementById("goalProgressPct");
-  const descEl = document.getElementById("goalProgressDesc");
-  const titleEl = document.getElementById("goalProgressTitle");
-
-  if(points.length === 0){
-    setScoreRing("goalProgressRing", 0, "orange", 40);
-    pctEl.textContent = "—";
-    titleEl.textContent = "Progreso hacia la meta";
-    descEl.textContent = "Cargá tu peso para ver tu progreso.";
-    return;
-  }
-
-  const first = points[0].peso;
-  const last = points[points.length - 1].peso;
-  const { goal, allAchieved } = getGoalStatus(last);
-
-  if(!goal){
-    setScoreRing("goalProgressRing", 0, "orange", 40);
-    pctEl.textContent = "—";
-    titleEl.textContent = "Progreso hacia la meta";
-    descEl.textContent = "Agregá una meta de peso para ver tu progreso.";
-    return;
-  }
-
-  titleEl.textContent = allAchieved ? "🎉 ¡Metas alcanzadas!" : ("Progreso hacia: " + goal.label);
-
+// Progreso hacia la meta inicial (la más cercana / primer hito) y hacia la meta final
+// (la más exigente / último hito). Usa TODO el historial, no solo el período elegido.
+function computeGoalProgress(goal, first, last, kgPerWeek){
   let pct = first <= goal.weight ? 100 : ((first - last) / (first - goal.weight)) * 100;
   pct = Math.max(0, Math.min(100, pct));
-
-  // Tendencia: compara contra el peso de ~14 días atrás (o el primer punto si hay menos historial)
-  const lastDateObj = parseDateLocal(points[points.length - 1].date);
-  const cutoff = new Date(lastDateObj);
-  cutoff.setDate(cutoff.getDate() - 14);
-  let refPoint = points[0];
-  for(let i = points.length - 1; i >= 0; i--){
-    if(parseDateLocal(points[i].date) <= cutoff){ refPoint = points[i]; break; }
-  }
-  const daysSpan = Math.max(1, (lastDateObj - parseDateLocal(refPoint.date)) / (1000*60*60*24));
-  const kgPerWeek = refPoint === points[points.length-1] ? 0 : ((refPoint.peso - last) / daysSpan) * 7;
+  const achieved = last <= goal.weight;
 
   let status, trendText;
-  if(allAchieved){
+  if(achieved){
     status = "green";
-    trendText = "¡Alcanzaste tu meta más exigente (" + goal.weight + " kg)!";
+    pct = 100;
+    trendText = "¡Logrado! Estás en " + last.toFixed(1) + " kg.";
   } else if(kgPerWeek >= 0.25){
     status = "green";
     trendText = "Bajando a buen ritmo: " + kgPerWeek.toFixed(2) + " kg/semana.";
@@ -2073,10 +2103,91 @@ function updateGoalProgressRing(){
     status = "red";
     trendText = "Sin tendencia de baja en las últimas semanas.";
   }
+  return { pct, achieved, status, trendText };
+}
 
-  setScoreRing("goalProgressRing", pct, status, 40);
-  pctEl.textContent = Math.round(pct) + "%";
-  descEl.innerHTML = "Vas de <b>" + first.toFixed(1) + " kg</b> a <b>" + last.toFixed(1) + " kg</b> · meta " + goal.weight + " kg.<br>" + trendText;
+// Puntitos indicadores del carrusel de metas: se actualizan con el scroll (swipe en mobile)
+(function bindGoalCarouselDots(){
+  const carousel = document.getElementById("goalCarousel");
+  const dotsWrap = document.getElementById("goalCarouselDots");
+  if(!carousel || !dotsWrap) return;
+  const dots = dotsWrap.querySelectorAll(".carousel-dot");
+  let ticking = false;
+  carousel.addEventListener("scroll", () => {
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const idx = Math.round(carousel.scrollLeft / carousel.clientWidth);
+      dots.forEach((d, i) => d.classList.toggle("active", i === idx));
+      ticking = false;
+    });
+  });
+  dots.forEach(dot => {
+    dot.addEventListener("click", () => {
+      const idx = parseInt(dot.dataset.index, 10);
+      carousel.scrollTo({ left: idx * carousel.clientWidth, behavior: "smooth" });
+    });
+  });
+})();
+
+function updateGoalProgressRings(){
+  const sorted = [...dates].sort();
+  const points = sorted
+    .map(d => ({ date: d, peso: parsePeso(entries[d] && entries[d].peso) }))
+    .filter(p => !isNaN(p.peso));
+
+  const groups = {
+    inicial: {
+      ring: "goalInicialRing",
+      pct: document.getElementById("goalInicialPct"),
+      title: document.getElementById("goalInicialTitle"),
+      desc: document.getElementById("goalInicialDesc")
+    },
+    final: {
+      ring: "goalFinalRing",
+      pct: document.getElementById("goalFinalPct"),
+      title: document.getElementById("goalFinalTitle"),
+      desc: document.getElementById("goalFinalDesc")
+    }
+  };
+
+  if(points.length === 0 || !goals || goals.length === 0){
+    const msg = points.length === 0 ? "Cargá tu peso para ver tu progreso." : "Agregá una meta de peso para ver tu progreso.";
+    ["inicial", "final"].forEach(key => {
+      setScoreRing(groups[key].ring, 0, "orange", 36);
+      groups[key].pct.textContent = "—";
+      groups[key].title.textContent = key === "inicial" ? "Meta inicial" : "Meta final";
+      groups[key].desc.textContent = msg;
+    });
+    return;
+  }
+
+  const first = points[0].peso;
+  const last = points[points.length - 1].peso;
+
+  // Tendencia (compartida por ambos anillos): compara contra el peso de ~14 días atrás
+  const lastDateObj = parseDateLocal(points[points.length - 1].date);
+  const cutoff = new Date(lastDateObj);
+  cutoff.setDate(cutoff.getDate() - 14);
+  let refPoint = points[0];
+  for(let i = points.length - 1; i >= 0; i--){
+    if(parseDateLocal(points[i].date) <= cutoff){ refPoint = points[i]; break; }
+  }
+  const daysSpan = Math.max(1, (lastDateObj - parseDateLocal(refPoint.date)) / (1000*60*60*24));
+  const kgPerWeek = refPoint === points[points.length-1] ? 0 : ((refPoint.peso - last) / daysSpan) * 7;
+
+  const sortedAsc = [...goals].sort((a,b) => a.weight - b.weight);
+  const inicialGoal = sortedAsc[sortedAsc.length - 1]; // mayor peso = primer hito a cruzar
+  const finalGoal = sortedAsc[0]; // menor peso = meta más exigente
+
+  [["inicial", inicialGoal], ["final", finalGoal]].forEach(([key, goal]) => {
+    const g = groups[key];
+    const result = computeGoalProgress(goal, first, last, kgPerWeek);
+    g.title.textContent = (key === "inicial" ? "Meta inicial: " : "Meta final: ") + goal.label;
+    setScoreRing(g.ring, result.pct, result.status, 36);
+    g.pct.textContent = result.achieved ? "100%" : Math.round(result.pct) + "%";
+    g.desc.innerHTML = "Vas de <b>" + first.toFixed(1) + " kg</b> a <b>" + last.toFixed(1) + " kg</b> · meta " + goal.weight + " kg.<br>" + result.trendText;
+  });
 }
 
 function renderWeightChart(rangeDates){
@@ -2177,7 +2288,8 @@ function renderWeightChart(rangeDates){
 
   const labels = points.map(p => {
     const dd = parseDateLocal(p.date);
-    return String(dd.getDate()).padStart(2,"0") + "/" + String(dd.getMonth()+1).padStart(2,"0");
+    const diaSemana = DAY_NAMES[dd.getDay()];
+    return diaSemana + " " + String(dd.getDate()).padStart(2,"0") + "/" + String(dd.getMonth()+1).padStart(2,"0");
   });
   const data = points.map(p => p.peso);
   const goalDatasets = (goals || []).map(g => ({
@@ -2286,6 +2398,7 @@ function renderColorSwatches(selectedColor){
 
 function openGoalModal(goalId){
   editingGoalId = goalId || null;
+  document.getElementById("goalsListModal").classList.remove("open");
   const modal = document.getElementById("goalModal");
   const titleEl = document.getElementById("goalModalTitle");
   const deleteBtn = document.getElementById("goalDeleteBtn");
@@ -2310,10 +2423,25 @@ function openGoalModal(goalId){
   modal.classList.add("open");
 }
 
+document.getElementById("goalsMenuBtn").addEventListener("click", () => {
+  renderGoalsList();
+  document.getElementById("goalsListModal").classList.add("open");
+});
+document.getElementById("goalsListModalClose").addEventListener("click", () => document.getElementById("goalsListModal").classList.remove("open"));
+document.getElementById("goalsListModal").addEventListener("click", (e) => {
+  if(e.target.id === "goalsListModal") document.getElementById("goalsListModal").classList.remove("open");
+});
+
 document.getElementById("addGoalBtn").addEventListener("click", () => openGoalModal(null));
-document.getElementById("goalModalClose").addEventListener("click", () => document.getElementById("goalModal").classList.remove("open"));
+document.getElementById("goalModalClose").addEventListener("click", () => {
+  document.getElementById("goalModal").classList.remove("open");
+  document.getElementById("goalsListModal").classList.add("open");
+});
 document.getElementById("goalModal").addEventListener("click", (e) => {
-  if(e.target.id === "goalModal") document.getElementById("goalModal").classList.remove("open");
+  if(e.target.id === "goalModal"){
+    document.getElementById("goalModal").classList.remove("open");
+    document.getElementById("goalsListModal").classList.add("open");
+  }
 });
 
 document.getElementById("goalSaveBtn").addEventListener("click", () => {
@@ -2336,6 +2464,7 @@ document.getElementById("goalSaveBtn").addEventListener("click", () => {
   scheduleSave();
   renderGoalsList();
   renderCharts();
+  document.getElementById("goalsListModal").classList.add("open");
 });
 
 document.getElementById("goalDeleteBtn").addEventListener("click", () => {
@@ -2346,6 +2475,7 @@ document.getElementById("goalDeleteBtn").addEventListener("click", () => {
   scheduleSave();
   renderGoalsList();
   renderCharts();
+  document.getElementById("goalsListModal").classList.add("open");
 });
 
 /* ================= Perfil de usuario ================= */
